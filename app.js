@@ -6,7 +6,10 @@ const app = express()
 const PORT = config.get('port') || process.env.PORT
 
 app.use(express.json({extended: true}))
+
 app.use('/api/', require('./routes/user.route'))
+app.use('/api/', require('./routes/subject.route'))
+app.use('/api/', require('./routes/specialty.route'))
 
 async function start() {
     try {

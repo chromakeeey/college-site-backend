@@ -1,15 +1,58 @@
 const { Router } = require("express");
 const router = Router();
 
-router.get('/getuser', async (req, res) => {
-    try {
-        const User = {
-            name: 'Oleksandr',
-            surname: 'Palamarchuk',
-            groupid: 256
-        }
+const { addUser, getUser, getUserSubjects, addUserSubject } = require('../mysql/user.commands')
 
-        res.status(201).json(User);
+router.get('/user/get', async (req, res) => {
+    try {
+        const { userid } = req.body
+
+        getUser(userid, (result) => {
+            res.status(201).json(result);
+        })
+
+    } catch(e) {
+        console.log(e);
+        res.status(500).json({ message: "An error occurred" });
+    }
+})
+
+router.get('/user/subject/get', async (req, res) => {
+    try {
+        const { user_id } = req.body
+
+        getUserSubjects(user_id, (result) => {
+            res.status(201).json(result);
+        })    
+
+    } catch(e) {
+        console.log(e);
+        res.status(500).json({ message: "An error occurred" });
+    }
+} )
+
+router.post('/user/subject/add', async (req, res) => {
+    try {
+        const { user_id, subject_id } = req.body
+
+        addUserSubject(user_id, subject_id, (result) => {
+            res.status(201).json(result);
+        })    
+
+    } catch(e) {
+        console.log(e);
+        res.status(500).json({ message: "An error occurred" });
+    }
+} )
+
+router.post('/user/add', async (req, res) => {
+    try {
+        const user = req.body
+
+        addUser(user, (result) => {
+            res.status(201).json(result);
+        } )
+ 
     } catch(e) {
         console.log(e);
         res.status(500).json({ message: "An error occurred" });
