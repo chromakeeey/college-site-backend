@@ -38,7 +38,7 @@ router.post('/user/subject/add', async (req, res) => {
         const { user_id, subject_id } = req.body
 
         addUserSubject(user_id, subject_id, (result) => {
-            res.status(201).json(result);
+            res.status(200).json(result);
         })
 
     } catch(e) {
@@ -52,7 +52,7 @@ router.post('/user/add', async (req, res) => {
         const user = req.body
 
         addUser(user, (result) => {
-            res.status(201).json(result);
+            res.status(200).json(result);
         } )
  
     } catch(e) {

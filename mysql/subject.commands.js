@@ -1,7 +1,7 @@
-const { connection } = require('../mysql/connection')
+const { connectionPool } = require('../mysql/connection')
 
 const selectAllSubjects = (callback) => {
-    connection.query('SELECT * FROM subject', (err, result) => {
+    connectionPool.query('SELECT * FROM subject', (err, result) => {
         if (err) {
             console.log(err)
             callback({message: err.message})
@@ -13,7 +13,7 @@ const selectAllSubjects = (callback) => {
 
 const addSubject = (subject, callback) => {
     const command = `INSERT INTO subject (name) VALUES ('${subject.name}')`
-    connection.query(command, (err, result) => {
+    connectionPool.query(command, (err, result) => {
         if (err) {
             console.log(err)
             callback({message: err.message})
@@ -25,7 +25,7 @@ const addSubject = (subject, callback) => {
 
 const getSubject = (subjectId, callback) => {
     const command = `SELECT * FROM subject WHERE id = ${subjectId}`
-    connection.query(command, (err, result) => {
+    connectionPool.query(command, (err, result) => {
         if (err) {
             console.log(err)
             callback({message: err.message})

@@ -1,4 +1,3 @@
-const mysql = require("mysql2")
 const { connectionPool } = require('./connection')
 
 const addUser = (user, callback) => {

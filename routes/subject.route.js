@@ -6,7 +6,7 @@ const { selectAllSubjects, addSubject, getSubject } = require('../mysql/subject.
 router.get('/subject/all', async (req, res) => {
     try {
         selectAllSubjects((result) => {
-            res.status(201).json(result);
+            res.status(200).json(result);
         })
 
     } catch(e) {
@@ -20,7 +20,7 @@ router.post('/subject/add', async (req, res) => {
         const { subject } = req.body
 
         addSubject(subject, (result) => {
-            res.status(201).json(result);
+            res.status(200).json(result);
         })
 
     } catch(e) {
@@ -34,7 +34,7 @@ router.get('/subject/get', async (req, res) => {
         const { subject_id } = req.body
 
         getSubject(subject_id, (result) => {
-            res.status(201).json(result);
+            res.status(200).json(result);
         })
 
     } catch(e) {
