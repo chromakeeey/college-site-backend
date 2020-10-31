@@ -1,7 +1,7 @@
-const { connection } = require('../mysql/connection')
+const { connectionPool } = require('../mysql/connection')
 
 const getAllSpecialty = (callback) => {
-    connection.query('SELECT * FROM specialty', (err, result) => {
+    connectionPool.query('SELECT * FROM specialty', (err, result) => {
         if (err) {
             console.log(err)
             callback({message: err.message})
@@ -13,7 +13,7 @@ const getAllSpecialty = (callback) => {
 
 const addSpecialty = (specialty, callback) => {
     const command = `INSERT INTO specialty (id, name) VALUES (${specialty.id}, '${specialty.name}')`
-    connection.query(command, (err, result) => {
+    connectionPool.query(command, (err, result) => {
         if (err) {
             console.log(err)
             callback({message: err.message})
@@ -25,7 +25,7 @@ const addSpecialty = (specialty, callback) => {
 
 const getSpecialty = (specialtyId, callback) => {
     const command = `SELECT * FROM specialty WHERE id = ${specialtyId}`
-    connection.query(command, (err, result) => {
+    connectionPool.query(command, (err, result) => {
         if (err) {
             console.log(err)
             callback({message: err.message})

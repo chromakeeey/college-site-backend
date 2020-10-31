@@ -6,7 +6,7 @@ const { getAllSpecialty, addSpecialty, getSpecialty } = require('../mysql/specia
 router.get('/specialty/all', async (req, res) => {
     try {
         getAllSpecialty((result) => {
-            res.status(201).json(result);
+            res.status(200).json(result);
         })
 
     } catch(e) {
@@ -20,7 +20,7 @@ router.post('/specialty/add', async (req, res) => {
         const { specialty } = req.body
 
         addSpecialty(specialty, (result) => {
-            res.status(201).json(result);
+            res.status(200).json(result);
         })
 
     } catch(e) {
@@ -34,7 +34,7 @@ router.get('/specialty/get', async (req, res) => {
         const { specialty_id } = req.body
 
         getSpecialty(specialty_id, (result) => {
-            res.status(201).json(result);
+            res.status(200).json(result);
         })
 
     } catch(e) {
