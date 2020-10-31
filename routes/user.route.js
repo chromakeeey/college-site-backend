@@ -8,11 +8,12 @@ router.get('/user/get', async (req, res) => {
         const { userid } = req.body
 
         getUser(userid, (result) => {
-            res.status(201).json(result);
+            res.status(200).json(result);
         })
 
     } catch(e) {
-        console.log(e);
+        console.error(e);
+
         res.status(500).json({ message: "An error occurred" });
     }
 })
@@ -22,11 +23,12 @@ router.get('/user/subject/get', async (req, res) => {
         const { user_id } = req.body
 
         getUserSubjects(user_id, (result) => {
-            res.status(201).json(result);
-        })    
+            res.status(200).json(result);
+        })
 
     } catch(e) {
-        console.log(e);
+        console.error(e);
+
         res.status(500).json({ message: "An error occurred" });
     }
 } )
@@ -37,7 +39,7 @@ router.post('/user/subject/add', async (req, res) => {
 
         addUserSubject(user_id, subject_id, (result) => {
             res.status(201).json(result);
-        })    
+        })
 
     } catch(e) {
         console.log(e);
@@ -54,7 +56,8 @@ router.post('/user/add', async (req, res) => {
         } )
  
     } catch(e) {
-        console.log(e);
+        console.error(e);
+
         res.status(500).json({ message: "An error occurred" });
     }
 })
