@@ -3,7 +3,7 @@ const config = require("config")
 const { connectionPool } = require('./mysql/connection')
 
 const app = express()
-const PORT = config.get('port') || process.env.PORT
+const PORT = process.env.PORT || config.get('port')
 
 app.use(express.json({extended: true}))
 
