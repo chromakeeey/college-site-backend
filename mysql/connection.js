@@ -1,11 +1,11 @@
 const mysql = require("mysql2")
 
 const connectionPool = mysql.createPool({
-    host: '95.217.23.218',
-    user: 'bleach02_pltdb',
-    password: 'polytechcv202027',
-    database: 'bleach02_polytechd',
-    connectionLimit: 10,
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
+    connectionLimit: Number(process.env.DB_CONNECTION_LIMIT),
 });
 
 module.exports = {

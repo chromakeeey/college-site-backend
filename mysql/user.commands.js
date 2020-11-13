@@ -1,15 +1,29 @@
 const { connectionPool } = require('./connection')
 
+const checkIfUserExists = (email, callback) => {
+    const command = 'SELECT EXISTS (SELECT 1 FROM user WHERE email = ?)';
+
+    connectionPool.query(command, email, (err, result) => {
+        if (err) {
+            console.error(err);
+
+            callback({message: err.message});
+        } 
+
+        const exists = Object.values(result[0])[0] === 1;
+
+        callback(exists);
+    });
+};
+
 const addUser = (user, callback) => {
-    const command = `INSERT INTO user (account_type_id, last_name, first_name, fathername, phone, email, group_id, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    const command = `INSERT INTO user (lastname, firstname, fathername, phone, email, password) VALUES (?, ?, ?, ?, ?, ?)`;
     const queryData = [
-        user.accountType,
-        user.surname,
-        user.name,
-        user.fathername,
+        user.last_name,
+        user.first_name,
+        user.father_name,
         user.phone,
         user.email,
-        user.groupid,
         user.password
     ];
 
@@ -23,6 +37,24 @@ const addUser = (user, callback) => {
         callback({userid: result.insertId});
     });
 }
+
+const getUserByEmail = (email, callback) => {
+    const command = 'SELECT * FROM user WHERE email = ?';
+
+    connectionPool.query(command, email, (err, result) => {
+        if (err) {
+            console.error(err);
+
+            callback(null)
+        } else {
+            if (result.length === 0) {
+                callback(null);
+            } else {
+                callback(result[0])
+            }
+        }
+    });
+};
 
 const getUser = (userId, callback) => {
     const command = `SELECT * FROM user WHERE id = ?`;
@@ -82,5 +114,7 @@ module.exports = {
     addUser,
     getUser,
     getUserSubjects,
-    addUserSubject
+    addUserSubject,
+    checkIfUserExists,
+    getUserByEmail,
 }
