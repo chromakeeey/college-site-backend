@@ -156,7 +156,7 @@ router.post('/users/auth', [
     if (user.account_type === 3) { // If it's a student
         const isActivated = await isStudentAccountActivated(user.id);
 
-        if (activated) {
+        if (isActivated) {
             req.session.user_id = user.id;
             return res.status(200).json({ id: user.id });
         }
