@@ -5,6 +5,13 @@ const router = Router();
 const bcrypt = require('bcrypt');
 const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
 
+const userType = {
+    ADMINISTRATOR: 1,
+    TEACHER: 2,
+    STUDENT: 3,
+    ENROLLEE: 4
+};
+
 const {
     checkIfEmailUsed,
     getAccountTypeByUserId,
@@ -59,7 +66,7 @@ router.post('/enrollees', [
 
     const hash = await hashPassword(data.password);
     data.password = hash;
-    data.account_type = 4; // enrollee
+    data.account_type = userType.ENROLLEE;
     
     await addUser(data);
     res.status(200).end();
@@ -100,7 +107,7 @@ router.post('/students', [
 
     const hash = await hashPassword(data.password);
     data.password = hash;
-    data.account_type = 3; // student
+    data.account_type = accountType.STUDENT;
 
     const userId = await addUser(data);
     await addStudentData({
@@ -146,14 +153,14 @@ router.post('/users/auth', [
         return res.status(401).json({ message: 'Password doesn not match.' });
     }
 
-    if (user.account_type === 1) { // If it's an admin
+    if (user.account_type === accountType.ADMINISTRATOR) {
         req.session.user_id = user.id;
         req.session.is_admin = true;
 
         return res.status(200).json({ id: user.id });
     }
 
-    if (user.account_type === 3) { // If it's a student
+    if (user.account_type === accountType.STUDENT) {
         const isActivated = await isStudentAccountActivated(user.id);
 
         if (isActivated) {
@@ -190,12 +197,12 @@ router.get('/users/:id', [
 
     const user = await getUserInfo(id);
 
-    if (user.account_type_id === 3) { // If student then include student's data
+    if (user.account_type_id === accountType.STUDENT) {
         const studentData = await getStudentData(id);
         
         user.group_id = studentData.group_id;
         user.is_activated = studentData.is_activated;
-    } else if (user.account_type_id === 2) { // If teacher then include teacher's data
+    } else if (user.account_type_id === accountType.TEACHER) {
         const teacherData = getTeacherData(id);
 
         if (teacherData.length !== 0) {
@@ -208,7 +215,10 @@ router.get('/users/:id', [
     // if the current user is not the requested one or admin or teacher
     // and
     // if requested user is not admin or teacher then remove email & phone fields
-    if ((accountType !== 2 || accountType !== 1) && req.session.user_id !== id && user.account_type_id !== 2 && user.account_type_id !== 1) {
+    if ((accountType !== accountType.TEACHER || accountType !== accountType.ADMINISTRATOR)
+            && req.session.user_id !== id
+            && user.account_type_id !== accountType.TEACHER
+            && user.account_type_id !== accountType.ADMINISTRATOR) {
         delete user.email;
         delete user.phone;
     }
