@@ -19,14 +19,10 @@ const {
     setStudentActivation,
 } = require('../mysql/user.commands');
 
-const hashPassword = (password) => {
-    return new Promise((resolve, reject) => {
-        bcrypt.genSalt(saltRounds).then((salt) => {
-            bcrypt.hash(password, salt).then((hash) => {
-                resolve(hash);
-            });
-        });
-    });
+const hashPassword = async (password) => {
+    const salt = await bcrypt.genSalt(saltRounds);
+
+    return await bcrypt.hash(password, salt);
 };
 
 router.post('/enrollees', [
@@ -196,6 +192,7 @@ router.get('/users/:id', [
 
     if (user.account_type_id === 3) { // If student then include student's data
         const studentData = await getStudentData(id);
+        
         user.group_id = studentData.group_id;
         user.is_activated = studentData.is_activated;
     } else if (user.account_type_id === 2) { // If teacher then include teacher's data
@@ -206,10 +203,12 @@ router.get('/users/:id', [
         }
     }
 
-    // If it's not the user itself, teacher or admin then remove email & phone fields
-    if (req.session.user_id !== id && user.account_type_id !== 2 && user.account_type_id !== 1) {
-        const accountType = await getAccountTypeByUserId(req.session.user_id);
+    const accountType = await getAccountTypeByUserId(req.session.user_id);
 
+    // if the current user is not the requested one or admin or teacher
+    // and
+    // if requested user is not admin or teacher then remove email & phone fields
+    if ((accountType !== 2 || accountType !== 1) && req.session.user_id !== id && user.account_type_id !== 2 && user.account_type_id !== 1) {
         delete user.email;
         delete user.phone;
     }
