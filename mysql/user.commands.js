@@ -1,24 +1,35 @@
 const { connectionPool } = require('./connection')
 
-const checkIfUserExists = (email, callback) => {
-    const command = 'SELECT EXISTS (SELECT 1 FROM user WHERE email = ?)';
+const queryHelper = (sql, data=[], preprocess) => {
+    return new Promise((resolve, reject) => {
+        connectionPool.query(sql, data, (err, result) => {
+            if (err) {
+                console.error(err);
 
-    connectionPool.query(command, email, (err, result) => {
-        if (err) {
-            console.error(err);
-
-            callback({message: err.message});
-        } 
-
-        const exists = Object.values(result[0])[0] === 1;
-
-        callback(exists);
+                reject(err);
+            } else {
+                resolve(preprocess(result));
+            }
+        });
     });
 };
 
-const addUser = (user, callback) => {
-    const command = `INSERT INTO user (lastname, firstname, fathername, phone, email, password) VALUES (?, ?, ?, ?, ?, ?)`;
+const checkIfEmailUsed = (email) => {
+    const command = 'SELECT EXISTS (SELECT 1 FROM user WHERE email = ?)';
+
+    return queryHelper(command, email, (result) => (result.length === 0) ? false : Object.values(result[0])[0] === 1);
+};
+
+const checkIfUserExists = (userId) => {
+    const command = 'SELECT EXISTS (SELECT 1 FROM user WHERE id = ?)';
+
+    return queryHelper(command, userId, (result) => (result.length === 0) ? false : Object.values(result[0])[0] === 1);
+};
+
+const addUser = (user) => {
+    const command = 'INSERT INTO user (account_type, last_name, first_name, father_name, phone, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)';
     const queryData = [
+        user.account_type,
         user.last_name,
         user.first_name,
         user.father_name,
@@ -27,94 +38,72 @@ const addUser = (user, callback) => {
         user.password
     ];
 
-    connectionPool.query(command, queryData, (err, result) => {
-        if (err) {
-            console.error(err);
-
-            callback({message: err.message});
-        } 
-
-        callback({userid: result.insertId});
-    });
+    return queryHelper(command, queryData, (result) => result.insertId);
 }
 
-const getUserByEmail = (email, callback) => {
-    const command = 'SELECT * FROM user WHERE email = ?';
+const getAccountTypeByUserId = (userId) => {
+    const command = 'SELECT account_type FROM user WHERE id = ? ';
 
-    connectionPool.query(command, email, (err, result) => {
-        if (err) {
-            console.error(err);
-
-            callback(null)
-        } else {
-            if (result.length === 0) {
-                callback(null);
-            } else {
-                callback(result[0])
-            }
-        }
-    });
+    return queryHelper(command, userId, (result) => Number(result[0].account_type));
 };
 
-const getUser = (userId, callback) => {
-    const command = `SELECT * FROM user WHERE id = ?`;
+const getUserByEmail = (email) => {
+    const command = 'SELECT * FROM user WHERE email = ?';
 
-    connectionPool.query(command, [userId], (err, result) => {
-        if (err) {
-            console.error(err);
+    return queryHelper(command, email, (result) => result[0]);
+};
 
-            callback({message: err.message})
-        } else {
-            if (result.length === 0) {
-                callback({message: 'User not found'})
-            } else {
-                callback(result[0])
-            }
-        }
-    });
-}
+const isStudentAccountActivated = (userId) => {
+    const command = 'SELECT EXISTS (SELECT 1 FROM student WHERE user_id = ? AND is_activated = 1)';
 
-const getUserSubjects = (userId, callback) => {
-    const command = `SELECT * FROM subject_teachers WHERE user_id = ?`;
+    return queryHelper(command, userId, (result) => (result.length === 0) ? false : Object.values(result[0])[0] === 1);
+};
 
-    connectionPool.query(command, [userId], (err, result) => {
-        if (err) {
-            console.error(err);
+const setStudentActivation = (userId, value) => {
+    const command = 'UPDATE student SET is_activated = ? WHERE user_id = ?';
 
-            callback({message: err.message});
-        } else {
-            callback({
-                subjects: result
-            });
-        }
-    });
-}
+    return queryHelper(command, [value, userId], (result) => true);
+};
 
-const addUserSubject = (userId, subjectId, callback) => {
-    const command = `INSERT INTO subject_teachers (user_id, subject_id) VALUES (?, ?)`;
+const addStudentData = (data) => {
+    const command = 'INSERT INTO student (user_id, group_id, is_activated) VALUES (?, ?, ?)';
     const queryData = [
-        userId,
-        subjectId
+        data.user_id,
+        data.group_id,
+        data.is_activated,
     ];
 
-    connectionPool.query(command, queryData, (err, result) => {
-        if (err) {
-            console.error(err);
+    return queryHelper(command, queryData, (result) => true);
+};
 
-            callback({message: err.message});
-        } else {
-            callback({
-                subject_teachers_id: result.insertId
-            });
-        }
-    });
-}
+const getStudentData = (userId) => {
+    const command = 'SELECT is_activated, group_id FROM student where user_id = ?';
+
+    return queryHelper(command, userId, (result) => result[0]);
+};
+
+const getUserInfo = (userId) => {
+    const command = 'SELECT user.id, user.first_name, user.last_name, user.father_name, user.phone, user.email, user.account_type as account_type_id, account_type.name as account_type_name FROM user, account_type WHERE user.id = ? AND user.account_type = account_type.id';
+
+    return queryHelper(command, userId, (result) => (result.length === 0) ? null : result[0]);
+};
+
+const getTeacherData = (userId) => {
+    const command = 'SELECT group_id FROM teacher WHERE user_id = ?';
+
+    return queryHelper(command, userId, (result) => (result.length === 0) ? null : result[0]);
+};
 
 module.exports = {
     addUser,
-    getUser,
-    getUserSubjects,
-    addUserSubject,
+    getStudentData,
+    getUserInfo,
+    checkIfEmailUsed,
     checkIfUserExists,
     getUserByEmail,
+    getAccountTypeByUserId,
+    isStudentAccountActivated,
+    setStudentActivation,
+    addStudentData,
+    getTeacherData,
 }
