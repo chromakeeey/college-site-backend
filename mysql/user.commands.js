@@ -4,8 +4,6 @@ const queryHelper = (sql, data=[], preprocess) => {
     return new Promise((resolve, reject) => {
         connectionPool.query(sql, data, (err, result) => {
             if (err) {
-                console.error(err);
-
                 reject(err);
             } else {
                 resolve(preprocess(result));
@@ -17,13 +15,13 @@ const queryHelper = (sql, data=[], preprocess) => {
 const checkIfEmailUsed = (email) => {
     const command = 'SELECT EXISTS (SELECT 1 FROM user WHERE email = ?)';
 
-    return queryHelper(command, email, (result) => (result.length === 0) ? false : Object.values(result[0])[0] === 1);
+    return queryHelper(command, email, (result) => Object.values(result[0])[0] === 1);
 };
 
 const checkIfUserExists = (userId) => {
     const command = 'SELECT EXISTS (SELECT 1 FROM user WHERE id = ?)';
 
-    return queryHelper(command, userId, (result) => (result.length === 0) ? false : Object.values(result[0])[0] === 1);
+    return queryHelper(command, userId, (result) => Object.values(result[0])[0] === 1);
 };
 
 const addUser = (user) => {
@@ -85,7 +83,7 @@ const getStudentData = (userId) => {
 const getUserInfo = (userId) => {
     const command = 'SELECT user.id, user.first_name, user.last_name, user.father_name, user.phone, user.email, user.account_type as account_type_id, account_type.name as account_type_name FROM user, account_type WHERE user.id = ? AND user.account_type = account_type.id';
 
-    return queryHelper(command, userId, (result) => (result.length === 0) ? null : result[0]);
+    return queryHelper(command, userId, (result) => result[0]);
 };
 
 const getTeacherData = (userId) => {

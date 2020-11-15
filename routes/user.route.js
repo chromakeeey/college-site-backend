@@ -5,6 +5,8 @@ const router = Router();
 const bcrypt = require('bcrypt');
 const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
 
+const AppError = require('../helpers/AppError');
+
 const userType = {
     ADMINISTRATOR: 1,
     TEACHER: 2,
@@ -61,7 +63,7 @@ router.post('/enrollees', [
     const emailUsed = await checkIfEmailUsed(data.email);
 
     if (emailUsed) {
-        return res.status(409).json({ message: 'The email address is in use.' });
+        throw new AppError('The email address is in use.', 409);
     }
 
     const hash = await hashPassword(data.password);
@@ -102,7 +104,7 @@ router.post('/students', [
     const emailUsed = await checkIfEmailUsed(data.email);
 
     if (emailUsed) {
-        return res.status(409).json({ message: 'The email address is in use.' });
+        throw new AppError('The email address is in use.', 409);
     }
 
     const hash = await hashPassword(data.password);
@@ -134,12 +136,12 @@ router.post('/users/auth', [
 
     // if logged in send a message
     if (req.session.user_id) {
-        return res.status(200).json({ message: 'You are already logged in.' });
+        throw new AppError('You are already logged in.', 200);
     }
 
     const isEmailUsed = await checkIfEmailUsed(data.email);
     if (!isEmailUsed) {
-        return res.status(404).json({ message: 'The email address cannot be found.' });
+        throw new AppError('The email address cannot be found.', 404);
     }
 
     const user = await getUserByEmail(data.email);
@@ -150,7 +152,7 @@ router.post('/users/auth', [
     const match = await bcrypt.compare(data.password, user.password);
 
     if (!match) {
-        return res.status(401).json({ message: 'Password doesn not match.' });
+        throw new AppError('Password doesn not match.', 401);
     }
 
     if (user.account_type === accountType.ADMINISTRATOR) {
@@ -168,7 +170,7 @@ router.post('/users/auth', [
             return res.status(200).json({ id: user.id });
         }
 
-        return res.status(403).json({ message: 'You cannot login! Wait for an administrator to approve your registration.' });
+        throw new AppError('You cannot login! Wait for an administrator to approve your registration.', 403);
     }
     
     req.session.user_id = user.id;
@@ -186,13 +188,13 @@ router.get('/users/:id', [
     }
 
     if (!req.session.user_id) {
-        return res.status(401).json({ message: 'You are not authorized.' });
+        throw new AppError('You are not authorized.', 401);
     }
 
     const userExists = await checkIfUserExists(id);
 
     if (!userExists) {
-        return res.status(404).json({ message: 'User not found.' });
+        throw new AppError('User not found.', 404);
     }
 
     const user = await getUserInfo(id);
@@ -238,7 +240,7 @@ router.put('/students/:id/activated', [
     }
 
     if (!req.session.user_id || !req.session.is_admin) {
-        return res.status(401).json({ message: 'You are not authorized.' });
+        throw new AppError('You are not authorized.', 401);
     }
 
     await setStudentActivation(req.params.id, is_activated);
