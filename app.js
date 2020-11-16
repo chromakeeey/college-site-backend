@@ -2,7 +2,6 @@ require('dotenv').config()
 require('express-async-errors')
 
 const express = require("express")
-const config = require("config")
 
 const app = express()
 const session = require('express-session')
@@ -10,7 +9,7 @@ const morgan = require('morgan');
 
 const { MemoryStore } = require('express-session')
 
-const PORT = process.env.PORT || config.get('port')
+const PORT = process.env.PORT;
 
 app.use(express.json({extended: true}))
 
@@ -50,6 +49,6 @@ app.use((err, req, res, next) => {
     next(err);
 });
 
-app.listen(PORT, () => {
+app.listen(process.env.PORT, () => {
     console.log(`App has been started on port ${PORT}...`)
 });
