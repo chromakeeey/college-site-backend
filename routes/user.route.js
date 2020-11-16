@@ -8,7 +8,7 @@ const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
 const AppError = require('../helpers/AppError');
 const middlewares = require('./middlewares');
 
-const userType = {
+const accountType = {
     ADMINISTRATOR: 1,
     TEACHER: 2,
     STUDENT: 3,
@@ -62,7 +62,7 @@ router.post('/enrollees', [
 
     const hash = await hashPassword(data.password);
     data.password = hash;
-    data.account_type = userType.ENROLLEE;
+    data.account_type = accountType.ENROLLEE;
     
     await addUser(data);
     res.status(200).end();
