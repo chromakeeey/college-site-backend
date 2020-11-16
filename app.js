@@ -27,9 +27,7 @@ app.use(session({
     rolling: true
 }))
 
-app.use('/api/', require('./routes/user.route'))
-app.use('/api/', require('./routes/subject.route'))
-app.use('/api/', require('./routes/specialty.route'))
+app.use('/api/', require('./routes/user.route'));
 
 app.get('/', (req, res) => {
     res.end('<h1>College site API</h1>')
