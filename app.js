@@ -28,6 +28,7 @@ app.use(session({
 }))
 
 app.use('/api/', require('./routes/user.route'));
+app.use('/api/', require('./routes/group.route'));
 
 app.get('/', (req, res) => {
     res.end('<h1>College site API</h1>')
