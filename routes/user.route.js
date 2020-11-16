@@ -1,11 +1,12 @@
 const { Router } = require("express");
-const { body, validationResult, param } = require("express-validator");
+const { body, param } = require("express-validator");
 const router = Router();
 
 const bcrypt = require('bcrypt');
 const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
 
 const AppError = require('../helpers/AppError');
+const middlewares = require('./middlewares');
 
 const userType = {
     ADMINISTRATOR: 1,
@@ -18,7 +19,6 @@ const {
     checkIfEmailUsed,
     getAccountTypeByUserId,
     isStudentAccountActivated,
-    checkIfUserExists,
     getStudentData,
     getUserInfo,
     addStudentData,
@@ -52,14 +52,8 @@ router.post('/enrollees', [
     body('password').isLength({
         min: 8,
     }),
-], async (req, res) => {
+], middlewares.validateData, async (req, res) => {
     const data = req.body;
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
     const emailUsed = await checkIfEmailUsed(data.email);
 
     if (emailUsed) {
@@ -93,14 +87,8 @@ router.post('/students', [
         min: 8,
     }),
     body('group_id').isNumeric(),
-], async (req, res) => {
+], middlewares.validateData, async (req, res) => {
     const data = req.body;
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
     const emailUsed = await checkIfEmailUsed(data.email);
 
     if (emailUsed) {
@@ -126,90 +114,64 @@ router.post('/users/auth', [
     body('password').isLength({
         min: 8,
     }),
-], async (req, res) => {
+], middlewares.validateData, async (req, res) => {
     const data = req.body;
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
 
     // if logged in send a message
     if (req.session.user_id) {
         throw new AppError('You are already logged in.', 200);
     }
 
-    const isEmailUsed = await checkIfEmailUsed(data.email);
-    if (!isEmailUsed) {
-        throw new AppError('The email address cannot be found.', 404);
-    }
-
     const user = await getUserByEmail(data.email);
-    if (user === null) {
-        return res.status(500).json({ message: 'An error occurred' });
+    if (!user) {
+        throw new AppError('A user with this email was not found.', 404);
     }
 
     const match = await bcrypt.compare(data.password, user.password);
-
     if (!match) {
         throw new AppError('Password doesn not match.', 401);
     }
 
-    if (user.account_type === accountType.ADMINISTRATOR) {
-        req.session.user_id = user.id;
-        req.session.is_admin = true;
+    switch (user.account_type) {
+        case accountType.ADMINISTRATOR:
+            req.session.is_admin = true;
+            
+            break;
+        case accountType.STUDENT:
+            const isActivated = await isStudentAccountActivated(user.id);
 
-        return res.status(200).json({ id: user.id });
+            if (!isActivated) {
+                throw new AppError('You cannot login! Wait for an administrator to approve your registration.', 403);
+            }
+            break;
     }
 
-    if (user.account_type === accountType.STUDENT) {
-        const isActivated = await isStudentAccountActivated(user.id);
-
-        if (isActivated) {
-            req.session.user_id = user.id;
-            return res.status(200).json({ id: user.id });
-        }
-
-        throw new AppError('You cannot login! Wait for an administrator to approve your registration.', 403);
-    }
-    
     req.session.user_id = user.id;
     res.status(200).json({ id: user.id });
 });
 
 router.get('/users/:id', [
     param('id').toInt(),
+], [
+    middlewares.validateData,
+    middlewares.loginRequired,
 ], async (req, res) => {
-    const errors = validationResult(req);
     const id = req.params.id;
-
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    if (!req.session.user_id) {
-        throw new AppError('You are not authorized.', 401);
-    }
-
-    const userExists = await checkIfUserExists(id);
-
-    if (!userExists) {
-        throw new AppError('User not found.', 404);
-    }
-
     const user = await getUserInfo(id);
 
-    if (user.account_type_id === accountType.STUDENT) {
-        const studentData = await getStudentData(id);
-        
-        user.group_id = studentData.group_id;
-        user.is_activated = studentData.is_activated;
-    } else if (user.account_type_id === accountType.TEACHER) {
-        const teacherData = getTeacherData(id);
+    switch (user.account_type) {
+        case accountType.STUDENT:
+            const studentData = await getStudentData(id);
+            user = Object.assign(user, studentData);
 
-        if (teacherData.length !== 0) {
-            user.group_id = teacherData.group_id;
-        }
+            break;
+        case accountType.TEACHER:
+            const teacherData = await getTeacherData(id);
+
+            if (!teacherData) {
+                user.group_id = teacherData.group_id;
+            }
+            break;
     }
 
     const accountType = await getAccountTypeByUserId(req.session.user_id);
@@ -231,20 +193,16 @@ router.get('/users/:id', [
 router.put('/students/:id/activated', [
     param('id').isInt().toInt(),
     body('is_activated').isBoolean().toBoolean(),
+], [
+    middlewares.validateData,
+    middlewares.loginRequired,
+    middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
-    const errors = validationResult(req);
     const { is_activated } = req.body;
 
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    if (!req.session.user_id || !req.session.is_admin) {
-        throw new AppError('You are not authorized.', 401);
-    }
-
     await setStudentActivation(req.params.id, is_activated);
-    res.status(2001).end();
+
+    res.status(201).end();
 });
 
 module.exports = router

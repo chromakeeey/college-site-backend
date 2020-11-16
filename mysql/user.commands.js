@@ -89,7 +89,7 @@ const getUserInfo = (userId) => {
 const getTeacherData = (userId) => {
     const command = 'SELECT group_id FROM teacher WHERE user_id = ?';
 
-    return queryHelper(command, userId, (result) => (result.length === 0) ? null : result[0]);
+    return queryHelper(command, userId, (result) => (!result.length) ? null : result[0]);
 };
 
 module.exports = {
