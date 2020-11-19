@@ -6,13 +6,14 @@ const express = require("express")
 const app = express()
 const session = require('express-session')
 const morgan = require('morgan');
+const cors = require('cors')
 
 const { MemoryStore } = require('express-session')
 
 const PORT = process.env.PORT;
 
 app.use(express.json({extended: true}))
-
+app.use(cors())
 app.use(morgan('dev'));
 
 app.use(session({
