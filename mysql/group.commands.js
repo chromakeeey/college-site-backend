@@ -1,48 +1,56 @@
-const QueryHelper = require('../helpers/QueryHelper');
+const { connectionPool } = require("./connection");
 
-const getGroups = () => {
-    return QueryHelper.query('SELECT * FROM `group`').commit();
+const getGroups = async () => {
+    const [rows] = await connectionPool.query('SELECT * FROM `group`');
+
+    return rows;
 };
 
-const getGroup = (groupId) => {
-    return QueryHelper.query('SELECT * FROM `group` WHERE id = ?')
-        .withParams(groupId)
-        .then((result) => result[0])
-        .commit();
+const getGroup = async (groupId) => {
+    const [rows] = await connectionPool.query('SELECT * FROM `group` WHERE id = ?', groupId);
+
+    return rows[0];
 };
 
-const addGroup = (group) => {
-    return QueryHelper.query('INSERT INTO `group` (specialty_id, course, subgroup) VALUES (?, ?, ?)')
-        .withParams(group.specialty_id, group.course, group.subgroup)
-        .then((result) => result.insertId)
-        .commit();
+const addGroup = async (group) => {
+    const [rows] = await connectionPool.query('INSERT INTO `group` (specialty_id, course, subgroup) VALUES (?, ?, ?)', [
+        group.specialty_id,
+        group.course,
+        group.subgroup
+    ]);
+
+    return rows.insertId;
 };
 
-const removeGroup = (groupId) => {
-    return QueryHelper.query('DELETE FROM `group` WHERE id = ?')
-        .withParams(groupId)
-        .commit();
+const removeGroup = async (groupId) => {
+    await connectionPool.query('DELETE FROM `group` WHERE id = ?', groupId);
 };
 
-const setGroupCourse = (groupId, course) => {
-    return QueryHelper.query('UPDATE `group` SET course = ? WHERE id = ?')
-        .withParams(course, groupId)
-        .then((result) => result.affectedRows > 0)
-        .commit();
+const setGroupCourse = async (groupId, course) => {
+    const [rows] = await connectionPool.query('UPDATE `group` SET course = ? WHERE id = ?', [
+        course,
+        groupId
+    ]);
+
+    return rows.affectedRows > 0;
 };
 
-const setGroupSpecialty = (groupId, specialtyId) => {
-    return QueryHelper.query('UPDATE `group` SET specialty_id = ? WHERE id = ?')
-        .withParams(specialtyId, groupId)
-        .then((result) => result.affectedRows > 0)
-        .commit();
+const setGroupSpecialty = async (groupId, specialtyId) => {
+    const [rows] = await connectionPool.query('UPDATE `group` SET specialty_id = ? WHERE id = ?', [
+        specialtyId,
+        groupId
+    ]);
+
+    return rows.affectedRows > 0;
 };
 
-const setGroupSubgroup = (groupId, subgroup) => {
-    return QueryHelper.query('UPDATE `group` SET subgroup = ? WHERE id = ?')
-        .withParams(subgroup, groupId)
-        .then((result) => result.affectedRows > 0)
-        .commit();
+const setGroupSubgroup = async (groupId, subgroup) => {
+    const [rows] = await ConvolverNode.query('UPDATE `group` SET subgroup = ? WHERE id = ?', [
+        subgroup,
+        groupId
+    ]);
+
+    return rows.affectedRows > 0;
 };
 
 module.exports = {
