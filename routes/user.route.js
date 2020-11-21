@@ -36,23 +36,35 @@ const hashPassword = async (password) => {
 };
 
 router.post('/enrollees', [
-    body('first_name').isLength({
-        min: 2,
-        max: 128
-    }),
-    body('last_name').isLength({
-        min: 2,
-        max: 128
-    }),
-    body('father_name').isLength({
-        min: 2,
-        max: 128
-    }),
-    body('email').isEmail(),
-    body('phone').isMobilePhone(),
-    body('password').isLength({
-        min: 8,
-    }),
+    body('first_name')
+        .exists().withMessage('This parameter is required.')
+        .isLength({
+            min: 2,
+            max: 128
+        }).withMessage('The value should be in a range from 2 to 128 characters long.'),
+    body('last_name')
+        .exists().withMessage('This parameter is required.')
+        .isLength({
+            min: 2,
+            max: 128
+        }).withMessage('The value should be in a range from 2 to 128 characters long.'),
+    body('father_name')
+        .exists().withMessage('This parameter is required.')
+        .isLength({
+            min: 2,
+            max: 128
+        }).withMessage('The value should be in a range from 2 to 128 characters long.'),
+    body('email')
+        .exists().withMessage('This parameter is required.')
+        .isEmail().withMessage('The value should be a valid email address.'),
+    body('phone')
+        .exists().withMessage('This parameter is required.')
+        .isMobilePhone().withMessage('The value should be a valid phone number.'),
+    body('password')
+        .exists().withMessage('This parameter is required.')
+        .isLength({
+            min: 8,
+        }).withMessage('The value should be at least 8 characters long.'),
 ], middlewares.validateData, async (req, res) => {
     const data = req.body;
     const emailUsed = await checkIfEmailUsed(data.email);
@@ -70,24 +82,38 @@ router.post('/enrollees', [
 });
 
 router.post('/students', [
-    body('first_name').isLength({
-        min: 2,
-        max: 128
-    }),
-    body('last_name').isLength({
-        min: 2,
-        max: 128
-    }),
-    body('father_name').isLength({
-        min: 2,
-        max: 128
-    }),
-    body('email').isEmail(),
-    body('phone').isMobilePhone(),
-    body('password').isLength({
-        min: 8,
-    }),
-    body('group_id').isNumeric(),
+    body('first_name')
+        .exists().withMessage('This parameter is required.')
+        .isLength({
+            min: 2,
+            max: 128
+        }).withMessage('The value should be in a range from 2 to 128 characters long.'),
+    body('last_name')
+        .exists().withMessage('This parameter is required.')
+        .isLength({
+            min: 2,
+            max: 128
+        }).withMessage('The value should be in a range from 2 to 128 characters long.'),
+    body('father_name')
+        .exists().withMessage('This parameter is required.')
+        .isLength({
+            min: 2,
+            max: 128
+        }).withMessage('The value should be in a range from 2 to 128 characters long.'),
+    body('email')
+        .exists().withMessage('This parameter is required.')
+        .isEmail().withMessage('The value should be a valid email address.'),
+    body('phone')
+        .exists().withMessage('This parameter is required.')
+        .isMobilePhone().withMessage('The value should be a valid phone number.'),
+    body('password')
+        .exists().withMessage('This parameter is required.')
+        .isLength({
+            min: 8,
+        }).withMessage('The value should be at least 8 characters long.'),
+    body('group_id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
 ], middlewares.validateData, async (req, res) => {
     const data = req.body;
     const emailUsed = await checkIfEmailUsed(data.email);
@@ -111,10 +137,14 @@ router.post('/students', [
 });
 
 router.post('/users/auth', [
-    body('email').isEmail(),
-    body('password').isLength({
-        min: 8,
-    }),
+    body('email')
+        .exists().withMessage('This parameter is required.')
+        .isEmail().withMessage('The value should be a valid email address.'),
+    body('password')
+        .exists().withMessage('This parameter is required.')
+        .isLength({
+            min: 8,
+        }).withMessage('The value should be at least 8 characters long.'),
 ], middlewares.validateData, async (req, res) => {
     const data = req.body;
 
@@ -216,8 +246,12 @@ router.get('/users/:id', [
 });
 
 router.put('/students/:id/activated', [
-    param('id').isInt().toInt(),
-    body('is_activated').isBoolean().toBoolean(),
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('is_activated')
+        .exists().withMessage('This parameter is required.')
+        .isBoolean().toBoolean().withMessage('The value should be of type boolean.'),
 ], [
     middlewares.validateData,
     middlewares.loginRequired,

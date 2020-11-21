@@ -29,9 +29,15 @@ router.get('/groups', async (req, res) => {
 });
 
 router.post('/groups', [
-    body('specialty_id').isInt(),
-    body('course').isInt(),
-    body('subgroup').isInt()
+    body('specialty_id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('course')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('subgroup')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer')
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
@@ -43,7 +49,9 @@ router.post('/groups', [
 });
 
 router.delete('/groups/:id', [
-    param('id').isInt().toInt(),
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
@@ -55,7 +63,9 @@ router.delete('/groups/:id', [
 });
 
 router.get('/groups/:id', [
-    param('id').isInt().toInt(),
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
 ], [
     middlewares.validateData,
 ], async (req, res) => {
@@ -71,8 +81,12 @@ router.get('/groups/:id', [
 });
 
 router.put('/groups/:id/course', [
-    param('id').isInt().toInt(),
-    body('course').isInt().toInt(),
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('course')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
@@ -91,8 +105,12 @@ router.put('/groups/:id/course', [
 });
 
 router.put('/groups/:id/specialty', [
-    param('id').isInt().toInt(),
-    body('specialty_id').isInt().toInt(),
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('specialty_id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
@@ -111,8 +129,12 @@ router.put('/groups/:id/specialty', [
 });
 
 router.put('/groups/:id/subgroup', [
-    param('id').isInt().toInt(),
-    body('subgroup').isInt().toInt(),
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('subgroup')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
