@@ -6,21 +6,15 @@ const bcrypt = require('bcrypt');
 const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
 
 const AppError = require('../helpers/AppError');
-const QueryHelper = require("../helpers/QueryHelper");
 const middlewares = require('./middlewares');
-
-const AccountType = {
-    ADMINISTRATOR: 1,
-    TEACHER: 2,
-    STUDENT: 3,
-    ENROLLEE: 4
-};
 
 const {
     checkIfEmailUsed,
     getAccountTypeByUserId,
     isStudentAccountActivated,
     getStudentData,
+    getStudents,
+    getStudentsCount,
     getUserInfo,
     addStudentData,
     getTeacherData,
@@ -28,6 +22,7 @@ const {
     addUser,
     setStudentActivation,
 } = require('../mysql/user.commands');
+const AccountType = require('../helpers/AccountType');
 
 const hashPassword = async (password) => {
     const salt = await bcrypt.genSalt(saltRounds);
@@ -297,76 +292,57 @@ router.get('/students', [
 ], [
     middlewares.validateData,
     middlewares.loginRequired
-], async (req, res, next) => {
+], async (req, res) => {
     const queries = req.query;
-    const whereClause = (() => {
-        const conditions = [];
-
-        if (queries.is_activated) {
-            conditions.push('s.is_activated = ' + queries.is_activated);
-        }
-
-        if (queries.group_id) {
-            conditions.push('s.group_id = ' + queries.group_id);
-        }
-
-        return conditions.join(' AND ');
-    })();
-
-    let sql = 'SELECT DISTINCT u.id, u.first_name, u.last_name, u.father_name, u.phone, u.email, s.group_id, s.is_activated, g.specialty_id, sp.name as specialty_name, g.course, g.subgroup FROM user as u, student as s, `group` as g, specialty as sp WHERE u.id = s.user_id AND u.account_type = 3 AND g.specialty_id = sp.id AND g.id = s.group_id ';
-    sql += (whereClause) ? ' AND ' + whereClause : '';
-    sql += (queries.order_by) ? (' ORDER BY ' + queries.order_by + ' ') + ((queries.order) ? queries.order : ' asc') : '';
-    sql += ' LIMIT ' + queries.count;
-    sql += (queries.page) ? (' OFFSET ' + ((queries.count * queries.page) - queries.count)) : '';
-
     const accountType = await getAccountTypeByUserId(req.session.user_id);
+    const offset = (queries.page) ? (queries.count * queries.page) - queries.count : 0;
 
-    QueryHelper
-        .query(sql)
-            .ifEmpty(() => res.status((queries.page) ? 404 : 204).end())
-            .preprocess((result) => {
-                const students = result.rows;
+    const students = await getStudents({
+        ascendingOrder: queries.order,
+        orderBy: queries.order_by,
+        offset: offset,
+        limit: queries.count,
+        groupId: queries.group_id,
+        isActivated: queries.is_activated
+    });
 
-                students.forEach((student) => {
-                    if (accountType === AccountType.STUDENT && req.session.user_id !== student.id) {
-                        delete student.email;
-                        delete student.phone;
-                    }
+    if (!students.length) {
+        return res.status((queries.page) ? 404 : 204).end();
+    }
 
-                    student.group = {
-                        'group_id': student.group_id,
-                        'group_name': ''.concat(student.specialty_id, student.course, student.subgroup),
-                        'specialty_id': student.specialty_id,
-                        'specialty_name': student.specialty_name,
-                        'course': student.course,
-                        'subgroup': student.subgroup
-                    };
+    students.forEach((student) => {
+        if (accountType === AccountType.STUDENT && req.session.user_id !== student.id) {
+            delete student.email;
+            delete student.phone;
+        }
 
-                    delete student.group_id;
-                    delete student.course;
-                    delete student.subgroup;
-                    delete student.specialty_id;
-                    delete student.specialty_name;
-                });
+        student.group = {
+            'group_id': student.group_id,
+            'group_name': ''.concat(student.specialty_id, student.course, student.subgroup),
+            'specialty_id': student.specialty_id,
+            'specialty_name': student.specialty_name,
+            'course': student.course,
+            'subgroup': student.subgroup
+        };
 
-                return students;
-            })
-        .query('SELECT COUNT (id) FROM user WHERE account_type = ?')
-            .withParams(AccountType.STUDENT)
-            .preprocess((result) => result.getValue())
-        .processAll((students, count) => {
-            res.status(200).json({
-                'page_count': Math.ceil(count / queries.count),
-                'current_item_count': students.length,
-                'result': students
-            });
-        })
-        .commit()
-        .catch((reason) => {
-            console.log(reason);
+        delete student.group_id;
+        delete student.course;
+        delete student.subgroup;
+        delete student.specialty_id;
+        delete student.specialty_name;
+    });
 
-            next(reason);
-        });
+    const studentsCount = await getStudentsCount({
+        isActivated: queries.is_activated,
+        groupId: queries.group_id
+    });
+    const pageCount = Math.ceil(studentsCount / queries.count);
+
+    res.status(200).json({
+        'page_count': pageCount,
+        'current_item_count': students.length,
+        'result': students
+    });
 });
 
 router.post('/users/logout', [

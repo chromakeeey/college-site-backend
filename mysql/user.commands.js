@@ -1,4 +1,5 @@
 const { connectionPool } = require('./connection');
+const AccountType = require('../helpers/AccountType');
 
 const checkIfEmailUsed = async (email) => {
     const [rows] = await connectionPool.query('SELECT EXISTS (SELECT 1 FROM user WHERE email = ?)', email)
@@ -79,6 +80,132 @@ const getTeacherData = async (userId) => {
     return (!rows.length) ? null : rows[0];
 };
 
+const getStudentsCount = async ({
+    isActivated,
+    groupId
+} = {}) => {
+    const whereCaluse = (() => {
+        const conditions = [];
+        const values = [];
+        const result = {
+            'values': values,
+            'conditions': ''
+        };
+
+        if (isActivated != undefined) {
+            conditions.push('student.is_activated = ?');
+            values.push(isActivated);
+        }
+
+        if (groupId != undefined) {
+            conditions.push('student.group_id = ?');
+            values.push(groupId);
+        }
+
+        if (conditions.length) {
+            result.conditions = 'AND ' + conditions.join(' AND ');
+        }
+
+        return result;
+    })();
+    const sql = `
+        SELECT
+            COUNT(user.id)
+        FROM
+            user, student
+        WHERE
+            user.id = student.user_id
+        AND
+            user.account_type = ? ${whereCaluse.conditions}
+    `;
+
+    const [rows] = await connectionPool.query(sql, [
+        AccountType.STUDENT,
+    ].concat(whereCaluse.values));
+
+    return Object.values(rows[0])[0];
+};
+
+const getStudents = async ({
+    ascendingOrder,
+    orderBy,
+    isActivated,
+    groupId,
+    limit,
+    offset
+} = {}) => {
+    const whereCaluse = (() => {
+        const conditions = [];
+        const values = [];
+        const result = {
+            'values': values,
+            'conditions': ''
+        };
+
+        if (isActivated != undefined) {
+            conditions.push('student.is_activated = ?');
+            values.push(isActivated);
+        }
+
+        if (groupId != undefined) {
+            conditions.push('student.group_id = ?');
+            values.push(groupId);
+        }
+
+        if (conditions.length) {
+            result.conditions = 'AND ' + conditions.join(' AND ');
+        }
+
+        return result;
+    })();
+    const limitStatement = (limit != undefined) ? `LIMIT ${limit}` : '';
+    const offsetStatement = (offset != undefined) ? `OFFSET ${offset}` : '';
+    const orderByClause = (() => {
+        if (orderBy == undefined) {
+            return '';
+        }
+
+        const ordering = (ascendingOrder === false) ? 'DESC' : 'ASC';
+
+        return `ORDER BY user.${orderBy} ${ordering}`;
+    })();
+
+    const sql = `
+        SELECT
+            user.id, user.first_name,
+            user.last_name, user.father_name,
+            user.phone, user.email,
+            student.group_id, student.is_activated,
+            \`group\`.course, \`group\`.subgroup,
+            specialty.id as specialty_id, specialty.name as specialty_name
+        FROM\
+            user
+        INNER JOIN
+            student
+        ON
+            student.user_id = user.id
+        INNER JOIN
+            \`group\`
+        ON
+            \`group\`.id = student.group_id
+        INNER JOIN
+            specialty
+        ON
+        \`group\`.specialty_id = specialty.id
+        WHERE
+            user.account_type = ? ${whereCaluse.conditions}
+        ${ orderByClause }
+        ${limitStatement}
+        ${offsetStatement}
+    `;
+
+    const [rows] = await connectionPool.query(sql, [
+        AccountType.STUDENT,
+    ].concat(whereCaluse.values));
+
+    return rows;
+};
+
 module.exports = {
     addUser,
     getStudentData,
@@ -91,4 +218,6 @@ module.exports = {
     setStudentActivation,
     addStudentData,
     getTeacherData,
+    getStudents,
+    getStudentsCount,
 }
