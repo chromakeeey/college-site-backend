@@ -14,7 +14,13 @@ const checkIfUserExists = async (userId) => {
 };
 
 const addUser = async (user) => {
-    const [rows] = await connectionPool.query('INSERT INTO user (account_type, last_name, first_name, father_name, phone, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)', [
+    const sql = `
+        INSERT INTO
+            user (account_type, last_name, first_name, father_name, phone, email, password)
+        VALUES
+            (?, ?, ?, ?, ?, ?, ?)
+    `;
+    const [rows] = await connectionPool.query(sql, [
         user.account_type,
         user.last_name,
         user.first_name,
@@ -63,19 +69,73 @@ const addStudentData = async (data) => {
 };
 
 const getStudentData = async (userId) => {
-    const [rows] = await connectionPool.query('SELECT s.group_id, s.is_activated, g.course, g.specialty_id, g.subgroup, sp.name as specialty_name FROM student as s, `group` as g, specialty as sp WHERE s.user_id = ? AND g.id = s.group_id AND g.specialty_id = sp.id;', userId);
+    const sql = `
+        SELECT
+            student.group_id,
+            student.is_activated,
+            group_data.course,
+            group_data.specialty_id,
+            group_data.subgroup,
+            specialty.name AS specialty_name
+        FROM
+            student,
+            \`group\` AS group_data,
+            specialty
+        WHERE
+            student.user_id = ?
+        AND
+            group_data.id = student.group_id
+        AND
+            group_data.specialty_id = specialty.id
+    `;
+    const [rows] = await connectionPool.query(sql, userId);
 
     return rows[0];
 };
 
 const getUserInfo = async (userId) => {
-    const [rows] = await connectionPool.query('SELECT user.id, user.first_name, user.last_name, user.father_name, user.phone, user.email, user.account_type as account_type_id, account_type.name as account_type_name FROM user, account_type WHERE user.id = ? AND user.account_type = account_type.id', userId);
+    const sql = `
+        SELECT
+            user.id,
+            user.first_name,
+            user.last_name,
+            user.father_name,
+            user.phone,
+            user.email,
+            user.account_type AS account_type_id,
+            account_type.name AS account_type_name
+        FROM
+            user, account_type
+        WHERE
+            user.id = ?
+        AND
+            user.account_type = account_type.id
+    `;
+    const [rows] = await connectionPool.query(sql, userId);
 
     return rows[0];
 };
 
 const getTeacherData = async (userId) => {
-    const [rows] = await connectionPool.query('SELECT t.group_id, g.course, g.specialty_id, g.subgroup, sp.name as specialty_name FROM teacher as t, `group` as g, specialty as sp WHERE t.user_id = ? AND g.id = t.group_id AND g.specialty_id = sp.id;', userId);
+    const sql = `
+        SELECT
+            teacher.group_id,
+            group_data.course,
+            group_data.specialty_id,
+            group_data.subgroup,
+            specialty.name AS specialty_name
+        FROM
+            teacher,
+            \`group\` AS group_data,
+            specialty
+        WHERE
+            teacher.user_id = ?
+        AND
+            group_data.id = teacher.group_id
+        AND
+            group_data.specialty_id = specialty.id
+    `;
+    const [rows] = await connectionPool.query(sql, userId);
 
     return (!rows.length) ? null : rows[0];
 };
@@ -177,8 +237,8 @@ const getStudents = async ({
             user.phone, user.email,
             student.group_id, student.is_activated,
             \`group\`.course, \`group\`.subgroup,
-            specialty.id as specialty_id, specialty.name as specialty_name
-        FROM\
+            specialty.id as specialty_id, specialty.name AS specialty_name
+        FROM
             user
         INNER JOIN
             student
