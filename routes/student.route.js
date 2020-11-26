@@ -10,12 +10,15 @@ const HashHelper = require("../helpers/HashHelper");
 const {
     checkIfEmailUsed,
     getAccountTypeByUserId,
+    addUser,
+} = require('../mysql/user.commands');
+
+const {
     getStudents,
     getStudentsCount,
     addStudentData,
-    addUser,
     setStudentActivation,
-} = require('../mysql/user.commands');
+} = require('../mysql/student.commands');
 
 router.put('/students/:id/activated', [
     param('id')

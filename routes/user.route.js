@@ -9,12 +9,18 @@ const HashHelper = require("../helpers/HashHelper");
 
 const {
     getAccountTypeByUserId,
-    isStudentAccountActivated,
-    getStudentData,
     getUserInfo,
-    getTeacherData,
     getUserByEmail,
 } = require('../mysql/user.commands');
+
+const {
+    isStudentAccountActivated,
+    getStudentData,
+} = require('../mysql/student.commands');
+
+const {
+    getTeacherData,
+} = require('../mysql/teacher.commands');
 
 router.post('/users/auth', [
     body('email')
