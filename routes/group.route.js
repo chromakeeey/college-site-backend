@@ -1,8 +1,10 @@
 const { Router } = require("express");
 const { body, param } = require("express-validator");
-const router = Router();
 
+const router = Router();
 const AppError = require('../helpers/AppError');
+const middlewares = require('./middlewares');
+
 const {
     getGroups,
     getGroup,
@@ -12,7 +14,6 @@ const {
     setGroupSpecialty,
     setGroupSubgroup,
 } = require("../mysql/group.commands");
-const middlewares = require('./middlewares');
 
 router.get('/groups', async (req, res) => {
     const groups = await getGroups();

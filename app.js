@@ -29,6 +29,8 @@ app.use(session({
 }))
 
 app.use('/api/', require('./routes/user.route'));
+app.use('/api/', require('./routes/enrollee.route'));
+app.use('/api/', require('./routes/student.route'));
 app.use('/api/', require('./routes/group.route'));
 
 app.get('/', (req, res) => {
