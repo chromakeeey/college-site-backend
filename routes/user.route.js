@@ -2,9 +2,6 @@ const { Router } = require("express");
 const { body, param, query } = require("express-validator");
 const router = Router();
 
-const bcrypt = require('bcrypt');
-const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
-
 const AppError = require('../helpers/AppError');
 const middlewares = require('./middlewares');
 
@@ -23,12 +20,7 @@ const {
     setStudentActivation,
 } = require('../mysql/user.commands');
 const AccountType = require('../helpers/AccountType');
-
-const hashPassword = async (password) => {
-    const salt = await bcrypt.genSalt(saltRounds);
-
-    return await bcrypt.hash(password, salt);
-};
+const HashHelper = require("../helpers/HashHelper");
 
 router.post('/enrollees', [
     body('first_name')
@@ -68,7 +60,7 @@ router.post('/enrollees', [
         throw new AppError('The email address is in use.', 409);
     }
 
-    const hash = await hashPassword(data.password);
+    const hash = await HashHelper.hash(data.password);
     data.password = hash;
     data.account_type = AccountType.ENROLLEE;
     
@@ -117,7 +109,7 @@ router.post('/students', [
         throw new AppError('The email address is in use.', 409);
     }
 
-    const hash = await hashPassword(data.password);
+    const hash = await HashHelper.hash(data.password);
     data.password = hash;
     data.account_type = AccountType.STUDENT;
 
@@ -153,7 +145,7 @@ router.post('/users/auth', [
         throw new AppError('A user with this email was not found.', 404);
     }
 
-    const match = await bcrypt.compare(data.password, user.password);
+    const match = await HashHelper.compare(data.password, user.password);
     if (!match) {
         throw new AppError('Password doesn not match.', 401);
     }

@@ -12,7 +12,7 @@ const loginRequired = (req, res, next) => {
 
 const adminPrivilegeRequired =  (req, res, next) => {
     if (!req.session.is_admin) {
-        throw new AppError('Access forbidden.', 403);
+        throw new AppError('Admin priviledge required.', 403);
     }
 
     next();
