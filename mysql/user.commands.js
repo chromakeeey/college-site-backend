@@ -70,10 +70,12 @@ const getUserInfo = async (userId) => {
 const setFirstName = async (userId, newFirstName) => {
     const sql = 'UPDATE user SET first_name = ? WHERE id = ?';
 
-    await connectionPool.query(sql, [
+    const [rows] = await connectionPool.query(sql, [
         newFirstName,
         userId
     ]);
+
+    return rows.affectedRows > 0;
 }
 
 module.exports = {

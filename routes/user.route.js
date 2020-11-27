@@ -158,9 +158,9 @@ router.put('/users/:id/first-name', [
         throw new AppError('Access forbidden.', 403);
     }
 
-    await setFirstName(req.params.id, req.body.first_name);
+    const result = await setFirstName(req.params.id, req.body.first_name);
 
-    res.status(201).end();
+    res.status(result ? 201 : 404).end();
 });
 
 module.exports = router
