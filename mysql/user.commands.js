@@ -67,6 +67,15 @@ const getUserInfo = async (userId) => {
     return rows[0];
 };
 
+const setFirstName = async (userId, newFirstName) => {
+    const sql = 'UPDATE user SET first_name = ? WHERE id = ?';
+
+    await connectionPool.query(sql, [
+        newFirstName,
+        userId
+    ]);
+}
+
 module.exports = {
     addUser,
     getUserInfo,
@@ -74,4 +83,5 @@ module.exports = {
     checkIfUserExists,
     getUserByEmail,
     getAccountTypeByUserId,
+    setFirstName,
 }

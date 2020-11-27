@@ -11,6 +11,7 @@ const {
     getAccountTypeByUserId,
     getUserInfo,
     getUserByEmail,
+    setFirstName,
 } = require('../mysql/user.commands');
 
 const {
@@ -142,6 +143,24 @@ router.post('/users/logout', [
     req.session.destroy();
 
     res.status(200).end();
+});
+
+router.put('/users/:id/first-name', [
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('first_name')
+], [
+    middlewares.validateData,
+    middlewares.loginRequired
+], async (req, res) => {
+    if (req.session.user_id !== req.params.id && !req.session.is_admin) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
+    await setFirstName(req.params.id, req.body.first_name);
+
+    res.status(201).end();
 });
 
 module.exports = router
