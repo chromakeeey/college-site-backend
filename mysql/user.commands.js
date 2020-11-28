@@ -78,6 +78,47 @@ const setFirstName = async (userId, newFirstName) => {
     return rows.affectedRows > 0;
 }
 
+const setLastName = async (userId, newLastName) => {
+    const sql = 'UPDATE user SET last_name = ? WHERE id = ?';
+
+    const [rows] = await connectionPool.query(sql, [
+            newLastName,
+            userId
+    ]);
+
+    return rows.affectedRows > 0;
+}
+
+const setFatherName = async (userId, newFatherName) => {
+    const sql = 'UPDATE user SET father_name = ? WHERE id = ?';
+
+    const [rows] = await connectionPool.query(sql, [
+            newFatherName,
+            userId
+    ]);
+
+    return rows.affectedRows > 0;
+}
+
+const setPhoneNumber = async (userId, newPhoneNumber) => {
+    const sql = 'UPDATE user SET phone = ? WHERE id = ?';
+
+    const [rows] = await connectionPool.query(sql, [
+            newPhoneNumber,
+            userId
+    ]);
+
+    return rows.affectedRows > 0;
+}
+
+const deleteUser = async (userId) => {
+    const sql = 'DELETE FROM user WHERE id = ?';
+
+    const [rows] = await connectionPool.query(sql, userId);
+
+    return rows.affectedRows > 0;
+}
+
 module.exports = {
     addUser,
     getUserInfo,
@@ -86,4 +127,8 @@ module.exports = {
     getUserByEmail,
     getAccountTypeByUserId,
     setFirstName,
+    setLastName,
+    setFatherName,
+    setPhoneNumber,
+    deleteUser
 }
