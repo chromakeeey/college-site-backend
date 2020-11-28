@@ -229,18 +229,19 @@ router.put('/users/:id/phone', [
 router.delete('/users/:id',
     param('id')
         .exists().withMessage('This parameter is required')
-        .isInt().toInt().withMessage('The value should be of type integer.'), [
-        middlewares.validateData,
-        middlewares.loginRequired,
-        middlewares.adminPrivilegeRequired
-    ], async (req, res) => {
-        if (req.session.user_id === req.params.id) {
-            throw new AppError('Access forbidden.', 403);
-        }
-    
-        const result = await deleteUser(req.params.id);
-    
-        res.status(result ? 200 : 404).end();
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+[
+    middlewares.validateData,
+    middlewares.loginRequired,
+    middlewares.adminPrivilegeRequired
+], async (req, res) => {
+    if (req.session.user_id === req.params.id) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
+    const result = await deleteUser(req.params.id);
+
+    res.status(result ? 200 : 404).end();
 });
 
 module.exports = router
