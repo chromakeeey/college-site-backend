@@ -82,12 +82,10 @@ const setFirstName = async (userId, newFirstName) => {
 const setLastName = async (userId, newLastName) => {
     const sql = 'UPDATE user SET last_name = ? WHERE id = ?';
 
-    const [rows] = await connectionPool.query(sql,
-        [
+    const [rows] = await connectionPool.query(sql, [
             newLastName,
             userId
-        ]
-    );
+    ]);
 
     return rows.affectedRows > 0;
 }
@@ -95,12 +93,10 @@ const setLastName = async (userId, newLastName) => {
 const setFatherName = async (userId, newFatherName) => {
     const sql = 'UPDATE user SET father_name = ? WHERE id = ?';
 
-    const [rows] = await connectionPool.query(sql,
-        [
+    const [rows] = await connectionPool.query(sql, [
             newFatherName,
             userId
-        ]
-    );
+    ]);
 
     return rows.affectedRows > 0;
 }
@@ -108,12 +104,10 @@ const setFatherName = async (userId, newFatherName) => {
 const setPhoneNumber = async (userId, newPhoneNumber) => {
     const sql = 'UPDATE user SET phone = ? WHERE id = ?';
 
-    const [rows] = await connectionPool.query(sql,
-        [
+    const [rows] = await connectionPool.query(sql, [
             newPhoneNumber,
             userId
-        ]    
-    );
+    ]);
 
     return rows.affectedRows > 0;
 }

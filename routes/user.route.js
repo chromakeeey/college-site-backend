@@ -206,20 +206,17 @@ router.put('/users/:id/father-name', [
     res.status(result ? 201 : 404).end();
 });
 
-router.put('/users/:id/phone',
-    [
+router.put('/users/:id/phone', [
         param('id')
             .exists().withMessage('This parameter is required')
             .isInt().toInt().withMessage('The value should be of type integer.'),
         body('phone')
             .exists().withMessage('This parameter is required')
             .isMobilePhone().withMessage('This mobile number is incorrect')
-    ],
-    [
+    ], [
         middlewares.validateData,
         middlewares.loginRequired
-    ],
-    async (req, res) => {
+    ], async (req, res) => {
         if (req.session.user_id !== req.params.id && !req.session.is_admin) {
             throw new AppError('Access forbidden.', 403);
         }
@@ -232,13 +229,11 @@ router.put('/users/:id/phone',
 router.delete('/users/:id',
         param('id')
             .exists().withMessage('This parameter is required')
-            .isInt().toInt().withMessage('The value should be of type integer.'),
-        [
+            .isInt().toInt().withMessage('The value should be of type integer.'), [
             middlewares.validateData,
             middlewares.loginRequired,
             middlewares.adminPrivilegeRequired
-        ],
-        async (req, res) => {
+        ], async (req, res) => {
             if (req.session.user_id === req.params.id) {
                 throw new AppError('Access forbidden.', 403);
             }
