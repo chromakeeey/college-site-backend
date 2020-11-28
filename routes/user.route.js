@@ -12,6 +12,10 @@ const {
     getUserInfo,
     getUserByEmail,
     setFirstName,
+    setLastName,
+    setFatherName,
+    setPhoneNumber,
+    deleteUser,
 } = require('../mysql/user.commands');
 
 const {
@@ -150,6 +154,7 @@ router.put('/users/:id/first-name', [
         .exists().withMessage('This parameter is required.')
         .isInt().toInt().withMessage('The value should be of type integer.'),
     body('first_name')
+        .exists().withMessage('This parameter is required.')
 ], [
     middlewares.validateData,
     middlewares.loginRequired
@@ -161,6 +166,86 @@ router.put('/users/:id/first-name', [
     const result = await setFirstName(req.params.id, req.body.first_name);
 
     res.status(result ? 201 : 404).end();
+});
+
+router.put('/users/:id/last-name', [
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('last_name')
+        .exists().withMessage('This parameter is required.')
+], [
+    middlewares.validateData,
+    middlewares.loginRequired
+], async (req, res) => {
+    if (req.session.user_id !== req.params.id && !req.session.is_admin) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
+    const result = await setLastName(req.params.id, req.body.last_name);
+
+    res.status(result ? 201 : 404).end();
+});
+
+router.put('/users/:id/father-name', [
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('father_name')
+        .exists().withMessage('This parameter is required.')
+], [
+    middlewares.validateData,
+    middlewares.loginRequired
+], async (req, res) => {
+    if (req.session.user_id !== req.params.id && !req.session.is_admin) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
+    const result = await setFatherName(req.params.id, req.body.father_name);
+
+    res.status(result ? 201 : 404).end();
+});
+
+router.put('/users/:id/phone',
+    [
+        param('id')
+            .exists().withMessage('This parameter is required')
+            .isInt().toInt().withMessage('The value should be of type integer.'),
+        body('phone')
+            .exists().withMessage('This parameter is required')
+            .isMobilePhone().withMessage('This mobile number is incorrect')
+    ],
+    [
+        middlewares.validateData,
+        middlewares.loginRequired
+    ],
+    async (req, res) => {
+        if (req.session.user_id !== req.params.id && !req.session.is_admin) {
+            throw new AppError('Access forbidden.', 403);
+        }
+    
+        const result = await setPhoneNumber(req.params.id, req.body.phone);
+    
+        res.status(result ? 201 : 404).end();
+});
+
+router.delete('/users/:id',
+        param('id')
+            .exists().withMessage('This parameter is required')
+            .isInt().toInt().withMessage('The value should be of type integer.'),
+        [
+            middlewares.validateData,
+            middlewares.loginRequired,
+            middlewares.adminPrivilegeRequired
+        ],
+        async (req, res) => {
+            if (req.session.user_id === req.params.id) {
+                throw new AppError('Access forbidden.', 403);
+            }
+        
+            const result = await deleteUser(req.params.id);
+        
+            res.status(result ? 200 : 404).end();
 });
 
 module.exports = router
