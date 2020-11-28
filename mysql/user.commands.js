@@ -1,4 +1,3 @@
-const connection = require('./connection');
 const { connectionPool } = require('./connection');
 
 const checkIfEmailUsed = async (email) => {
