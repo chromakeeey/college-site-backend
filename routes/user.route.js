@@ -137,11 +137,6 @@ router.get('/users/:id', [
 });
 
 router.post('/users/logout', [
-    param('id')
-        .exists().withMessage('This parameter is required.')
-        .isInt().toInt().withMessage('The value should be of type integer.')
-], [
-    middlewares.validateData,
     middlewares.loginRequired
 ], async (req, res) => {
     req.session.destroy();
