@@ -1,14 +1,12 @@
-require('dotenv').config()
-require('express-async-errors')
+require('dotenv').config();
+require('express-async-errors');
 
-const express = require("express")
+const express = require("express");
 
-const app = express()
-const session = require('express-session')
+const app = express();
 const morgan = require('morgan');
-const cors = require('cors')
-
-const { MemoryStore } = require('express-session')
+const cors = require('cors');
+const Session = require('./sessions/Session');
 
 const PORT = process.env.PORT;
 
@@ -16,17 +14,24 @@ app.use(express.json({extended: true}))
 app.use(cors())
 app.use(morgan('dev'));
 
-app.use(session({
-    store: new MemoryStore(),
+app.use(Session({
     secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        httpOnly: true,
-        maxAge: (((60 * 1000) * 60) * 24) * 4, // 4 days
-    },
-    rolling: true
-}))
+    store: (() => {
+        if (process.env.SESSION_STORE == 'redis') {
+            const RedisStore = require('./sessions/RedisStore');
+            const Redis = require('ioredis');
+
+            return new RedisStore(new Redis({
+                showFriendlyErrorStack: true
+            }));
+        }
+
+        const MemoryStore = require('./sessions/MemoryStore');
+
+        return new MemoryStore();
+    })(),
+    expirationTime: (((60 * 1000) * 60) * 24) * 4, // 4 days
+}));
 
 app.use('/api/', require('./routes/user.route'));
 app.use('/api/', require('./routes/enrollee.route'));
@@ -34,8 +39,8 @@ app.use('/api/', require('./routes/student.route'));
 app.use('/api/', require('./routes/group.route'));
 
 app.get('/', (req, res) => {
-    res.end('<h1>College site API</h1>')
-})
+    res.end('<h1>College site API</h1>');
+});
 
 app.use((err, req, res, next) => {
     if (err.isOperational) {
@@ -52,5 +57,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(process.env.PORT, () => {
-    console.log(`App has been started on port ${PORT}...`)
+    console.log(`App has been started on port ${PORT}...`);
 });

@@ -1,11 +1,11 @@
-const { Router } = require("express");
-const { body, param } = require("express-validator");
+const { Router } = require('express');
+const { body, param } = require('express-validator');
 const router = Router();
 
 const AppError = require('../helpers/AppError');
 const middlewares = require('./middlewares');
 const AccountType = require('../helpers/AccountType');
-const HashHelper = require("../helpers/HashHelper");
+const HashHelper = require('../helpers/HashHelper');
 
 const {
     getAccountTypeByUserId,
@@ -40,7 +40,7 @@ router.post('/users/auth', [
     const data = req.body;
 
     // if logged in send a message
-    if (req.session.user_id) {
+    if (req.session.exists()) {
         throw new AppError('You are already logged in.', 200);
     }
 
@@ -54,9 +54,11 @@ router.post('/users/auth', [
         throw new AppError('Password doesn not match.', 401);
     }
 
+    const sessionData = {};
+
     switch (user.account_type) {
         case AccountType.ADMINISTRATOR:
-            req.session.is_admin = true;
+            sessionData.isAdmin = true;
             
             break;
         case AccountType.STUDENT:
@@ -68,7 +70,7 @@ router.post('/users/auth', [
             break;
     }
 
-    req.session.user_id = user.id;
+    await req.session.init(user.id, sessionData);
     res.status(200).json({ id: user.id });
 });
 
@@ -109,13 +111,13 @@ router.get('/users/:id', [
             break;
     }
 
-    const accountType = await getAccountTypeByUserId(req.session.user_id);
+    const accountType = await getAccountTypeByUserId(req.session.userId);
 
     // if the current user is not the requested one or admin or teacher
     // and
     // if requested user is not admin or teacher then remove email & phone fields
     if ((accountType !== AccountType.TEACHER || accountType !== AccountType.ADMINISTRATOR)
-            && req.session.user_id !== id
+            && req.session.userId !== id
             && user.account_type.id !== AccountType.TEACHER
             && user.account_type.id !== AccountType.ADMINISTRATOR) {
         delete user.email;
@@ -136,12 +138,27 @@ router.get('/users/:id', [
     res.status(200).json(user);
 });
 
-router.post('/users/logout', [
+router.post('/users/:id/logout', [
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.')
+], [
+    middlewares.validateData,
     middlewares.loginRequired
 ], async (req, res) => {
-    req.session.destroy();
+    if (req.params.id === req.session.userId) {
+        await req.session.delete();
 
-    res.status(200).end();
+        return res.status(200).end();
+    }
+
+    if (req.session.isAdmin) {
+        await req.session.store.deleteSessionsByUserId(req.params.id);
+
+        return res.status(200).end();
+    }
+
+    return new AppError('Access forbidden.', 403);
 });
 
 router.put('/users/:id/first-name', [
@@ -154,7 +171,7 @@ router.put('/users/:id/first-name', [
     middlewares.validateData,
     middlewares.loginRequired
 ], async (req, res) => {
-    if (req.session.user_id !== req.params.id && !req.session.is_admin) {
+    if (req.session.userId !== req.params.id && !req.session.isAdmin) {
         throw new AppError('Access forbidden.', 403);
     }
 
@@ -173,7 +190,7 @@ router.put('/users/:id/last-name', [
     middlewares.validateData,
     middlewares.loginRequired
 ], async (req, res) => {
-    if (req.session.user_id !== req.params.id && !req.session.is_admin) {
+    if (req.session.userId !== req.params.id && !req.session.isAdmin) {
         throw new AppError('Access forbidden.', 403);
     }
 
@@ -192,7 +209,7 @@ router.put('/users/:id/father-name', [
     middlewares.validateData,
     middlewares.loginRequired
 ], async (req, res) => {
-    if (req.session.user_id !== req.params.id && !req.session.is_admin) {
+    if (req.session.userId !== req.params.id && !req.session.isAdmin) {
         throw new AppError('Access forbidden.', 403);
     }
 
@@ -212,7 +229,7 @@ router.put('/users/:id/phone', [
     middlewares.validateData,
     middlewares.loginRequired
 ], async (req, res) => {
-    if (req.session.user_id !== req.params.id && !req.session.is_admin) {
+    if (req.session.userId !== req.params.id && !req.session.isAdmin) {
         throw new AppError('Access forbidden.', 403);
     }
 
@@ -230,7 +247,7 @@ router.delete('/users/:id',
     middlewares.loginRequired,
     middlewares.adminPrivilegeRequired
 ], async (req, res) => {
-    if (req.session.user_id === req.params.id) {
+    if (req.session.userId === req.params.id) {
         throw new AppError('Access forbidden.', 403);
     }
 

@@ -74,7 +74,7 @@ router.get('/students', [
     middlewares.loginRequired
 ], async (req, res) => {
     const queries = req.query;
-    const accountType = await getAccountTypeByUserId(req.session.user_id);
+    const accountType = await getAccountTypeByUserId(req.session.userId);
     const offset = (queries.page) ? (queries.count * queries.page) - queries.count : 0;
 
     const students = await getStudents({
@@ -91,7 +91,7 @@ router.get('/students', [
     }
 
     students.forEach((student) => {
-        if (accountType === AccountType.STUDENT && req.session.user_id !== student.id) {
+        if (accountType === AccountType.STUDENT && req.session.userId !== student.id) {
             delete student.email;
             delete student.phone;
         }
