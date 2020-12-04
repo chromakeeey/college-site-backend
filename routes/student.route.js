@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { body, param, query } = require("express-validator");
+const { body, query } = require("express-validator");
 const router = Router();
 
 const AppError = require('../helpers/AppError');
@@ -17,27 +17,7 @@ const {
     getStudents,
     getStudentsCount,
     addStudentData,
-    setStudentActivation,
 } = require('../mysql/student.commands');
-
-router.put('/students/:id/activated', [
-    param('id')
-        .exists().withMessage('This parameter is required.')
-        .isInt().toInt().withMessage('The value should be of type integer.'),
-    body('is_activated')
-        .exists().withMessage('This parameter is required.')
-        .isBoolean().toBoolean().withMessage('The value should be of type boolean.'),
-], [
-    middlewares.validateData,
-    middlewares.loginRequired,
-    middlewares.adminPrivilegeRequired,
-], async (req, res) => {
-    const { is_activated } = req.body;
-
-    await setStudentActivation(req.params.id, is_activated);
-
-    res.status(201).end();
-});
 
 router.get('/students', [
     query('order')
@@ -104,6 +84,7 @@ router.get('/students', [
             'course': student.course,
             'subgroup': student.subgroup
         };
+        student.is_activated = Boolean(student.is_activated);
 
         delete student.group_id;
         delete student.course;
@@ -169,12 +150,12 @@ router.post('/students', [
     const hash = await HashHelper.hash(data.password);
     data.password = hash;
     data.account_type = AccountType.STUDENT;
+    data.is_activated = false;
 
     const userId = await addUser(data);
     await addStudentData({
         user_id: userId,
-        group_id: data.group_id,
-        is_activated: false
+        group_id: data.group_id
     })
 
     res.status(202).end();

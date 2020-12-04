@@ -53,7 +53,8 @@ router.post('/enrollees', [
     const hash = await HashHelper.hash(data.password);
     data.password = hash;
     data.account_type = AccountType.ENROLLEE;
-    
+    data.is_activated = true;
+
     await addUser(data);
     res.status(200).end();
 });
