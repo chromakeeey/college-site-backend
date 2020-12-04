@@ -4,7 +4,7 @@ const AccountType = require('../helpers/AccountType');
 const getStudentsCount = async ({
     isActivated,
     groupId
-}) => {
+} = {}) => {
     const whereCaluse = (() => {
         const conditions = [];
         const values = [];
