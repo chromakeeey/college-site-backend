@@ -7,25 +7,9 @@ const middlewares = require('./middlewares');
 const AccountType = require('../helpers/AccountType');
 const HashHelper = require('../helpers/HashHelper');
 
-const {
-    getAccountTypeByUserId,
-    getUserInfo,
-    getUserByEmail,
-    setFirstName,
-    setLastName,
-    setFatherName,
-    setPhoneNumber,
-    deleteUser,
-    setActivationStatus,
-} = require('../mysql/user.commands');
-
-const {
-    getStudentData,
-} = require('../mysql/student.commands');
-
-const {
-    getTeacherData,
-} = require('../mysql/teacher.commands');
+const User = require('../mysql/user.commands');
+const Student = require('../mysql/student.commands');
+const Teacher = require('../mysql/teacher.commands');
 
 router.post('/users/auth', [
     body('email')
@@ -44,7 +28,7 @@ router.post('/users/auth', [
         throw new AppError('You are already logged in.', 200);
     }
 
-    const user = await getUserByEmail(data.email);
+    const user = await User.getUserByEmail(data.email);
     if (!user) {
         throw new AppError('A user with this email was not found.', 404);
     }
@@ -76,7 +60,7 @@ router.get('/users/:id', [
     middlewares.loginRequired
 ], async (req, res) => {
     const id = req.params.id;
-    const user = await getUserInfo(id);
+    const user = await User.getUserInfo(id);
 
     if (!user) {
         throw new AppError('User was not found.', 404);
@@ -95,18 +79,18 @@ router.get('/users/:id', [
 
     switch (user.account_type.id) {
         case AccountType.STUDENT:
-            data = await getStudentData(id);
+            data = await Student.getStudentData(id);
 
             break;
         case AccountType.TEACHER:
-            data = await getTeacherData(id);
+            data = await Teacher.getTeacherData(id);
 
             user.is_curator = data !== null;
 
             break;
     }
 
-    const accountType = await getAccountTypeByUserId(req.session.userId);
+    const accountType = await User.getAccountTypeByUserId(req.session.userId);
 
     // if the current user is not the requested one or admin or teacher
     // and
@@ -170,7 +154,7 @@ router.put('/users/:id/first-name', [
         throw new AppError('Access forbidden.', 403);
     }
 
-    const result = await setFirstName(req.params.id, req.body.first_name);
+    const result = await User.setFirstName(req.params.id, req.body.first_name);
 
     res.status(result ? 201 : 404).end();
 });
@@ -189,7 +173,7 @@ router.put('/users/:id/last-name', [
         throw new AppError('Access forbidden.', 403);
     }
 
-    const result = await setLastName(req.params.id, req.body.last_name);
+    const result = await User.setLastName(req.params.id, req.body.last_name);
 
     res.status(result ? 201 : 404).end();
 });
@@ -208,7 +192,7 @@ router.put('/users/:id/father-name', [
         throw new AppError('Access forbidden.', 403);
     }
 
-    const result = await setFatherName(req.params.id, req.body.father_name);
+    const result = await User.setFatherName(req.params.id, req.body.father_name);
 
     res.status(result ? 201 : 404).end();
 });
@@ -228,7 +212,7 @@ router.put('/users/:id/phone', [
         throw new AppError('Access forbidden.', 403);
     }
 
-    const result = await setPhoneNumber(req.params.id, req.body.phone);
+    const result = await User.setPhoneNumber(req.params.id, req.body.phone);
 
     res.status(result ? 201 : 404).end();
 });
@@ -246,7 +230,7 @@ router.delete('/users/:id',
         throw new AppError('Access forbidden.', 403);
     }
 
-    const result = await deleteUser(req.params.id);
+    const result = await User.deleteUser(req.params.id);
 
     res.status(result ? 200 : 404).end();
 });
@@ -264,7 +248,7 @@ router.put('/users/:id/activated', [
     middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
     const status = req.body.is_activated;
-    const result = await setActivationStatus(req.params.id, status);
+    const result = await User.setActivationStatus(req.params.id, status);
 
     if (!status) {
         await req.session.store.deleteSessionsByUserId(req.params.id);

@@ -5,18 +5,10 @@ const router = Router();
 const AppError = require('../helpers/AppError');
 const middlewares = require('./middlewares');
 
-const {
-    getGroups,
-    getGroup,
-    addGroup,
-    removeGroup,
-    setGroupCourse,
-    setGroupSpecialty,
-    setGroupSubgroup,
-} = require("../mysql/group.commands");
+const Group = require('../mysql/group.commands');
 
 router.get('/groups', async (req, res) => {
-    const groups = await getGroups();
+    const groups = await Group.getGroups();
 
     if (!groups.length) {
         res.status(204).end();
@@ -44,7 +36,12 @@ router.post('/groups', [
     middlewares.loginRequired,
     middlewares.adminPrivilegeRequired
 ], async (req, res) => {
-    const id = await addGroup(req.body);
+    const data = req.body;
+    const id = await Group.addGroup({
+        specialtyId: data.specialty_id,
+        course: data.course,
+        subgroup: data.subgroup
+    });
 
     res.status(201).json({ id: id });
 });
@@ -58,7 +55,7 @@ router.delete('/groups/:id', [
     middlewares.loginRequired,
     middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
-    await removeGroup(req.params.id);
+    await Group.removeGroup(req.params.id);
 
     res.status(200).end();
 });
@@ -70,7 +67,7 @@ router.get('/groups/:id', [
 ], [
     middlewares.validateData,
 ], async (req, res) => {
-    const group = await getGroup(req.params.id);
+    const group = await Group.getGroup(req.params.id);
 
     if (!group) {
         throw new AppError('Group with this id was not found.', 404);
@@ -96,7 +93,7 @@ router.put('/groups/:id/course', [
     const id = req.params.id;
     const { course } = req.body;
 
-    const success = await setGroupCourse(id, course);
+    const success = await Group.setGroupCourse(id, course);
 
     if (!success) {
         throw new AppError('Group with this id was not found.', 404);
@@ -118,9 +115,9 @@ router.put('/groups/:id/specialty', [
     middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
     const id = req.params.id;
-    const { specialty_id } = req.body;
+    const specialtyId = req.body.specialty_id;
 
-    const success = await setGroupSpecialty(id, specialty_id);
+    const success = await Group.setGroupSpecialty(id, specialtyId);
 
     if (!success) {
         throw new AppError('Group with this id was not found.', 404);
@@ -144,7 +141,7 @@ router.put('/groups/:id/subgroup', [
     const id = req.params.id;
     const { subgroup } = req.body;
 
-    const success = await setGroupSubgroup(id, subgroup);
+    const success = await Group.setGroupSubgroup(id, subgroup);
 
     if (!success) {
         throw new AppError('Group with this id was not found.', 404);

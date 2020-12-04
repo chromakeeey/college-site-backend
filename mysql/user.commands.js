@@ -12,7 +12,16 @@ const checkIfUserExists = async (userId) => {
     return Object.values(rows[0])[0] === 1;
 };
 
-const addUser = async (user) => {
+const addUser = async ({
+    accountType,
+    firstName,
+    lastName,
+    fatherName,
+    phone,
+    email,
+    password,
+    isActivated
+}) => {
     const sql = `
         INSERT INTO
             user (account_type, last_name, first_name, father_name, phone, email, password, is_activated)
@@ -20,14 +29,10 @@ const addUser = async (user) => {
             (?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const [rows] = await connectionPool.query(sql, [
-        user.account_type,
-        user.last_name,
-        user.first_name,
-        user.father_name,
-        user.phone,
-        user.email,
-        user.password,
-        user.is_activated
+        accountType, lastName,
+        firstName, fatherName,
+        phone, email,
+        password, isActivated
     ]);
 
     return rows.insertId;

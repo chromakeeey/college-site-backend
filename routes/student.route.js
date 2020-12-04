@@ -7,17 +7,8 @@ const middlewares = require('./middlewares');
 const AccountType = require('../helpers/AccountType');
 const HashHelper = require("../helpers/HashHelper");
 
-const {
-    checkIfEmailUsed,
-    getAccountTypeByUserId,
-    addUser,
-} = require('../mysql/user.commands');
-
-const {
-    getStudents,
-    getStudentsCount,
-    addStudentData,
-} = require('../mysql/student.commands');
+const User = require('../mysql/user.commands');
+const Student = require('../mysql/student.commands');
 
 router.get('/students', [
     query('order')
@@ -54,10 +45,10 @@ router.get('/students', [
     middlewares.loginRequired
 ], async (req, res) => {
     const queries = req.query;
-    const accountType = await getAccountTypeByUserId(req.session.userId);
+    const accountType = await User.getAccountTypeByUserId(req.session.userId);
     const offset = (queries.page) ? (queries.count * queries.page) - queries.count : 0;
 
-    const students = await getStudents({
+    const students = await Student.getStudents({
         ascendingOrder: queries.order,
         orderBy: queries.order_by,
         offset: offset,
@@ -93,7 +84,7 @@ router.get('/students', [
         delete student.specialty_name;
     });
 
-    const studentsCount = await getStudentsCount({
+    const studentsCount = await Student.getStudentsCount({
         isActivated: queries.is_activated,
         groupId: queries.group_id
     });
@@ -141,19 +132,24 @@ router.post('/students', [
         .isInt().toInt().withMessage('The value should be of type integer.'),
 ], middlewares.validateData, async (req, res) => {
     const data = req.body;
-    const emailUsed = await checkIfEmailUsed(data.email);
+    const emailUsed = await User.checkIfEmailUsed(data.email);
 
     if (emailUsed) {
         throw new AppError('The email address is in use.', 409);
     }
 
     const hash = await HashHelper.hash(data.password);
-    data.password = hash;
-    data.account_type = AccountType.STUDENT;
-    data.is_activated = false;
-
-    const userId = await addUser(data);
-    await addStudentData({
+    const userId = await User.addUser({
+        firstName: data.first_name,
+        lastName: data.last_name,
+        fatherName: data.father_name,
+        email: data.email,
+        phone: data.phone,
+        accountType: AccountType.STUDENT,
+        isActivated: false,
+        password: hash
+    });;
+    await Student.addStudentData({
         user_id: userId,
         group_id: data.group_id
     })
