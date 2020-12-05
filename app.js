@@ -19,8 +19,9 @@ app.use(Session({
             const RedisStore = require('./sessions/RedisStore');
             const Redis = require('ioredis');
 
-            return new RedisStore(new Redis(process.env.REDIS_TLS_URL, {
-                showFriendlyErrorStack: true
+            return new RedisStore(new Redis(process.env.REDIS_URL, {
+                showFriendlyErrorStack: true,
+                sentinelTLS
             }));
         }
 
