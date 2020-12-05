@@ -20,8 +20,7 @@ app.use(Session({
             const Redis = require('ioredis');
 
             return new RedisStore(new Redis(process.env.REDIS_URL, {
-                showFriendlyErrorStack: true,
-                sentinelTLS
+                showFriendlyErrorStack: true
             }));
         }
 
