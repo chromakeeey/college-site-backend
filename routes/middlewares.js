@@ -10,7 +10,7 @@ const loginRequired = (req, res, next) => {
     next();
 };
 
-const adminPrivilegeRequired =  (req, res, next) => {
+const adminPrivilegeRequired = (req, res, next) => {
     if (!req.session.isAdmin) {
         throw new AppError('Admin priviledge required.', 403);
     }

@@ -42,7 +42,10 @@ router.post('/users/auth', [
         throw new AppError('Password doesn not match.', 401);
     }
 
-    const sessionData = {};
+    const sessionData = {
+        accountType: user.account_type
+    };
+
     if (user.account_type === AccountType.ADMINISTRATOR) {
         sessionData.isAdmin = true;
     }
