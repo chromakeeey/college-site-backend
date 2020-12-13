@@ -158,9 +158,21 @@ const addStudentData = async (data) => {
     ]);
 };
 
+const setStudentGroup = async (userId, groupId) => {
+    const sql = 'UPDATE `student` SET group_id = ? WHERE user_id = ?';
+
+    const [rows] = await connectionPool.query(sql, [
+        groupId,
+        userId
+    ]);
+
+    return rows.affectedRows > 0;
+}
+
 module.exports = {
     getStudentData,
     addStudentData,
     getStudents,
     getStudentsCount,
+    setStudentGroup
 }
