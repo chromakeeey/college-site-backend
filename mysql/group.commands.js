@@ -62,16 +62,34 @@ const setCurator = async (curator) => {
     return rows.affectedRows > 0;
 };
 
-const getGroupCurator = async (groupId) => {
-    const [rows] = await connectionPool.query('SELECT u.id, u.first_name, u.last_name, u.father_name, u.phone, u.is_activated FROM `teacher` AS t INNER JOIN `user` AS u WHERE t.user_id = u.id AND t.group_id = ?', groupId);
-
-    return rows[0];
-};
-
-const getGroupInfo = async (groupId) => {
-    const [rows] = await connectionPool.query('SELECT g.id, g.specialty_id, g.course, g.subgroup, s.name FROM `specialty` AS s INNER JOIN `group` AS g WHERE g.id = 2', groupId);
-
-    rows[0].group_name = `${rows[0].specialty_id}${rows[0].course}${rows[0].subgroup}`;
+const getCurator = async (groupId) => {
+    const sql = `
+        SELECT
+            u.id,
+            u.first_name,
+            u.last_name,
+            u.father_name,
+            u.phone,
+            u.is_activated,
+            g.id AS group_id,
+            g.specialty_id,
+            g.course,
+            g.subgroup,
+            s.name
+        FROM
+            \`teacher\` AS t
+        INNER JOIN 
+            \`user\` AS u,
+            \`specialty\` AS s,
+            \`group\` AS g
+        WHERE 
+            t.user_id = u.id
+        AND
+            t.group_id = ?
+        AND
+            g.id = t.group_id
+    `;
+    const [rows] = await connectionPool.query(sql, groupId);
 
     return rows[0];
 };
@@ -79,8 +97,7 @@ const getGroupInfo = async (groupId) => {
 module.exports = {
     getGroups,
     getGroup,
-    getGroupCurator,
-    getGroupInfo,
+    getCurator,
     addGroup,
     removeGroup,
     setGroupCourse,
