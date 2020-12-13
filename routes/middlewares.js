@@ -3,15 +3,15 @@ const { validationResult } = require('express-validator');
 const AppError = require('../helpers/AppError');
 
 const loginRequired = (req, res, next) => {
-    if (!req.session.user_id) {
+    if (!req.session.exists()) {
         throw new AppError('You are not authorized.', 401);
     }
 
     next();
 };
 
-const adminPrivilegeRequired =  (req, res, next) => {
-    if (!req.session.is_admin) {
+const adminPrivilegeRequired = (req, res, next) => {
+    if (!req.session.isAdmin) {
         throw new AppError('Admin priviledge required.', 403);
     }
 

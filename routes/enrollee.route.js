@@ -7,10 +7,7 @@ const middlewares = require('./middlewares');
 const AccountType = require('../helpers/AccountType');
 const HashHelper = require("../helpers/HashHelper");
 
-const {
-    checkIfEmailUsed,
-    addUser,
-} = require('../mysql/user.commands');
+const User = require('../mysql/user.commands');
 
 router.post('/enrollees', [
     body('first_name')
@@ -44,17 +41,24 @@ router.post('/enrollees', [
         }).withMessage('The value should be at least 8 characters long.'),
 ], middlewares.validateData, async (req, res) => {
     const data = req.body;
-    const emailUsed = await checkIfEmailUsed(data.email);
+    const emailUsed = await User.checkIfEmailUsed(data.email);
 
     if (emailUsed) {
         throw new AppError('The email address is in use.', 409);
     }
 
     const hash = await HashHelper.hash(data.password);
-    data.password = hash;
-    data.account_type = AccountType.ENROLLEE;
-    
-    await addUser(data);
+
+    await User.addUser({
+        firstName: data.first_name,
+        lastName: data.last_name,
+        fatherName: data.father_name,
+        email: data.email,
+        phone: data.phone,
+        accountType: AccountType.ENROLLEE,
+        isActivated: true,
+        password: hash
+    });
     res.status(200).end();
 });
 

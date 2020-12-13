@@ -36,7 +36,12 @@ router.post('/groups', [
     middlewares.loginRequired,
     middlewares.adminPrivilegeRequired
 ], async (req, res) => {
-    const id = await Group.addGroup(req.body);
+    const data = req.body;
+    const id = await Group.addGroup({
+        specialtyId: data.specialty_id,
+        course: data.course,
+        subgroup: data.subgroup
+    });
 
     res.status(201).json({ id: id });
 });
@@ -110,9 +115,8 @@ router.put('/groups/:id/specialty', [
     middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
     const id = req.params.id;
-    const { specialty_id } = req.body;
-
-    const success = await Group.setGroupSpecialty(id, specialty_id);
+    const specialtyId = req.body.specialty_id;
+    const success = await Group.setGroupSpecialty(id, specialtyId);
 
     if (!success) {
         throw new AppError('Group with this id was not found.', 404);

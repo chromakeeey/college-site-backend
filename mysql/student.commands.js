@@ -14,7 +14,7 @@ const getStudentsCount = async ({
         };
 
         if (isActivated != undefined) {
-            conditions.push('student.is_activated = ?');
+            conditions.push('user.is_activated = ?');
             values.push(isActivated);
         }
 
@@ -64,7 +64,7 @@ const getStudents = async ({
         };
 
         if (isActivated != undefined) {
-            conditions.push('student.is_activated = ?');
+            conditions.push('user.is_activated = ?');
             values.push(isActivated);
         }
 
@@ -96,7 +96,7 @@ const getStudents = async ({
             user.id, user.first_name,
             user.last_name, user.father_name,
             user.phone, user.email,
-            student.group_id, student.is_activated,
+            student.group_id, user.is_activated,
             \`group\`.course, \`group\`.subgroup,
             specialty.id as specialty_id, specialty.name AS specialty_name
         FROM
@@ -131,7 +131,6 @@ const getStudentData = async (userId) => {
     const sql = `
         SELECT
             student.group_id,
-            student.is_activated,
             group_data.course,
             group_data.specialty_id,
             group_data.subgroup,
@@ -153,32 +152,14 @@ const getStudentData = async (userId) => {
 };
 
 const addStudentData = async (data) => {
-    await connectionPool.query('INSERT INTO student (user_id, group_id, is_activated) VALUES (?, ?, ?)', [
+    await connectionPool.query('INSERT INTO student (user_id, group_id) VALUES (?, ?)', [
         data.user_id,
-        data.group_id,
-        data.is_activated,
+        data.group_id
     ]);
-};
-
-const isStudentAccountActivated = async (userId) => {
-    const [rows] = await connectionPool.query('SELECT EXISTS (SELECT 1 FROM student WHERE user_id = ? AND is_activated = 1)', userId);
-
-    return (!rows.length) ? false : Object.values(rows[0])[0] === 1;
-};
-
-const setStudentActivation = async (userId, value) => {
-    const [rows] = await connectionPool.query('UPDATE student SET is_activated = ? WHERE user_id = ?', [
-        value,
-        userId
-    ]);
-
-    return true;
 };
 
 module.exports = {
     getStudentData,
-    isStudentAccountActivated,
-    setStudentActivation,
     addStudentData,
     getStudents,
     getStudentsCount,

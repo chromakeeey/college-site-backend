@@ -12,21 +12,27 @@ const checkIfUserExists = async (userId) => {
     return Object.values(rows[0])[0] === 1;
 };
 
-const addUser = async (user) => {
+const addUser = async ({
+    accountType,
+    firstName,
+    lastName,
+    fatherName,
+    phone,
+    email,
+    password,
+    isActivated
+}) => {
     const sql = `
         INSERT INTO
-            user (account_type, last_name, first_name, father_name, phone, email, password)
+            user (account_type, last_name, first_name, father_name, phone, email, password, is_activated)
         VALUES
-            (?, ?, ?, ?, ?, ?, ?)
+            (?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const [rows] = await connectionPool.query(sql, [
-        user.account_type,
-        user.last_name,
-        user.first_name,
-        user.father_name,
-        user.phone,
-        user.email,
-        user.password
+        accountType, lastName,
+        firstName, fatherName,
+        phone, email,
+        password, isActivated
     ]);
 
     return rows.insertId;
@@ -53,6 +59,7 @@ const getUserInfo = async (userId) => {
             user.father_name,
             user.phone,
             user.email,
+            user.is_activated,
             user.account_type AS account_type_id,
             account_type.name AS account_type_name
         FROM
@@ -119,6 +126,21 @@ const deleteUser = async (userId) => {
     return rows.affectedRows > 0;
 }
 
+const setActivationStatus = async (userId, value) => {
+    const [rows] = await connectionPool.query('UPDATE user SET is_activated = ? WHERE id = ?', [
+        value,
+        userId
+    ]);
+
+    return rows.affectedRows > 0;
+};
+
+const getActivationStatus = async (userId) => {
+    const [rows] = await connectionPool.query('SELECT EXISTS (SELECT 1 FROM user WHERE id = ? AND is_activated = 1)', userId);
+
+    return (!rows.length) ? false : Object.values(rows[0])[0] === 1;
+};
+
 module.exports = {
     addUser,
     getUserInfo,
@@ -130,5 +152,7 @@ module.exports = {
     setLastName,
     setFatherName,
     setPhoneNumber,
-    deleteUser
+    deleteUser,
+    setActivationStatus,
+    getActivationStatus
 }

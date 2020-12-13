@@ -12,11 +12,13 @@ const getGroup = async (groupId) => {
     return rows[0];
 };
 
-const addGroup = async (group) => {
+const addGroup = async ({
+    specialtyId, course, subgroup
+}) => {
     const [rows] = await connectionPool.query('INSERT INTO `group` (specialty_id, course, subgroup) VALUES (?, ?, ?)', [
-        group.specialty_id,
-        group.course,
-        group.subgroup
+        specialtyId,
+        course,
+        subgroup
     ]);
 
     return rows.insertId;
