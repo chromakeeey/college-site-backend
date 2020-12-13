@@ -62,6 +62,10 @@ router.put('/parent-numbers/:id/first-name', [
         .isInt().toInt().withMessage('The value should be of type integer.'),
     body('first_name')
         .exists().withMessage('This parameter is required.')
+        .isLength({
+            min: 2,
+            max: 128
+        }).withMessage('The value must be at least 8 characters and no more than 128 characters.')
 ], [
     middlewares.validateData,
     middlewares.loginRequired
@@ -81,6 +85,10 @@ router.put('/parent-numbers/:id/last-name', [
         .isInt().toInt().withMessage('The value should be of type integer.'),
     body('last_name')
         .exists().withMessage('This parameter is required.')
+        .isLength({
+            min: 2,
+            max: 128
+        }).withMessage('The value must be at least 8 characters and no more than 128 characters.')
 ], [
     middlewares.validateData,
     middlewares.loginRequired
@@ -120,6 +128,10 @@ router.put('/parent-numbers/:id/role', [
         .isInt().toInt().withMessage('The value should be of type integer.'),
     body('role')
         .exists().withMessage('This parameter is required')
+        .isLength({
+            min: 2,
+            max: 128
+        }).withMessage('The value must be at least 8 characters and no more than 128 characters.'),
 ], [
     middlewares.validateData,
     middlewares.loginRequired
@@ -161,8 +173,6 @@ router.get('/parent-numbers', [
     if (req.session.userId !== req.query.user_id && (!req.session.isAdmin && req.session.accountType != AccountType.STUDENT)) {
         throw new AppError('Access forbidden.', 403);
     }
-
-    console.log(`user_id: ${req.query.user_id}`);
 
     const parents = await ParentNumber.getParents(req.query.user_id);
 
