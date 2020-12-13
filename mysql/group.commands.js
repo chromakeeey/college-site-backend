@@ -120,7 +120,7 @@ const getGroupMembers = async(groupId) => {
     ]);
 
     return rows;
-}
+};
 
 module.exports = {
     getGroups,
