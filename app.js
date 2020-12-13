@@ -6,6 +6,7 @@ const app = express();
 const morgan = require('morgan');
 const cors = require('cors');
 const Session = require('./sessions/Session');
+const { request } = require('express');
 const PORT = process.env.PORT;
 
 app.use(express.json({extended: true}))
@@ -36,6 +37,7 @@ app.use('/api/', require('./routes/enrollee.route'));
 app.use('/api/', require('./routes/student.route'));
 app.use('/api/', require('./routes/group.route'));
 app.use('/api/', require('./routes/parent_number.route'));
+app.use('/api', require('./routes/teacher.route'));
 
 app.get('/', (req, res) => {
     res.end('<h1>College site API</h1>');
