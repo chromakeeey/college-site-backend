@@ -8,11 +8,14 @@ const middlewares = require('./middlewares');
 const {
     getGroups,
     getGroup,
+    getGroupCurator,
+    getGroupInfo,
     addGroup,
     removeGroup,
     setGroupCourse,
     setGroupSpecialty,
     setGroupSubgroup,
+    setCurator
 } = require("../mysql/group.commands");
 
 router.get('/groups', async (req, res) => {
@@ -151,6 +154,55 @@ router.put('/groups/:id/subgroup', [
     }
 
     res.status(201).end();
+});
+
+router.put('/groups/:id/curator', [
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('group_id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('curator_id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+], [
+    middlewares.validateData,
+    middlewares.loginRequired,
+    middlewares.adminPrivilegeRequired,
+], async (req, res) => {
+    if (req.session.user_id !== req.params.id) {
+        throw new AppError('Access forbidden.', 403);
+    }
+    
+    const success = await setCurator(req.body);
+
+    if(!success) {
+        throw new AppError('Group with this id was not found.', 404);
+    }
+
+    res.status(201).end();
+});
+
+router.get('/groups/:id/curator', [
+    body('group_id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+], [
+    middlewares.validateData,
+    middlewares.loginRequired
+], async (req, res) => {
+    const curator = await getGroupCurator(req.body.group_id);
+   
+    console.log(curator == null);
+
+    if (curator == null) {
+        res.status(204).end();
+    }
+
+    curator.group = await getGroupInfo(req.body.group_id);
+
+    res.status(200).json(curator);
 });
 
 module.exports = router

@@ -175,6 +175,14 @@ const setStudentActivation = async (userId, value) => {
     return true;
 };
 
+const addParentNumber = async (userId, number) => {
+    await connectionPool.query('INSERT INTO student (user_id, group_id, is_activated) VALUES (?, ?, ?)', [
+        data.user_id,
+        data.group_id,
+        data.is_activated,
+    ]);
+};
+
 module.exports = {
     getStudentData,
     isStudentAccountActivated,
