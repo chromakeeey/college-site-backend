@@ -55,12 +55,55 @@ const setGroupSubgroup = async (groupId, subgroup) => {
     return rows.affectedRows > 0;
 };
 
+const setCurator = async (curator) => {
+    const [rows] = await connectionPool.query('UPDATE `teacher` SET group_id = ? WHERE user_id = ?', [
+        curator.group_id,
+        curator.curator_id
+    ]);
+
+    return rows.affectedRows > 0;
+};
+
+const getCurator = async (groupId) => {
+    const sql = `
+        SELECT
+            u.id,
+            u.first_name,
+            u.last_name,
+            u.father_name,
+            u.phone,
+            u.is_activated,
+            g.id AS group_id,
+            g.specialty_id,
+            g.course,
+            g.subgroup,
+            s.name
+        FROM
+            \`teacher\` AS t
+        INNER JOIN 
+            \`user\` AS u,
+            \`specialty\` AS s,
+            \`group\` AS g
+        WHERE 
+            t.user_id = u.id
+        AND
+            t.group_id = ?
+        AND
+            g.id = t.group_id
+    `;
+    const [rows] = await connectionPool.query(sql, groupId);
+
+    return rows[0];
+};
+
 module.exports = {
     getGroups,
     getGroup,
+    getCurator,
     addGroup,
     removeGroup,
     setGroupCourse,
     setGroupSpecialty,
     setGroupSubgroup,
+    setCurator
 }

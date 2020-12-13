@@ -116,7 +116,6 @@ router.put('/groups/:id/specialty', [
 ], async (req, res) => {
     const id = req.params.id;
     const specialtyId = req.body.specialty_id;
-
     const success = await Group.setGroupSpecialty(id, specialtyId);
 
     if (!success) {
@@ -148,6 +147,68 @@ router.put('/groups/:id/subgroup', [
     }
 
     res.status(201).end();
+});
+
+router.put('/groups/:id/curator', [
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('group_id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('curator_id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+], [
+    middlewares.validateData,
+    middlewares.loginRequired,
+    middlewares.adminPrivilegeRequired,
+], async (req, res) => {
+    if (req.session.userId !== req.params.id) {
+        throw new AppError('Access forbidden.', 403);
+    }
+    
+    const success = await Group.setCurator(req.body);
+
+    if(!success) {
+        throw new AppError('Group with this id was not found.', 404);
+    }
+
+    res.status(201).end();
+});
+
+router.get('/groups/:id/curator', [
+    body('group_id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+], [
+    middlewares.validateData,
+    middlewares.loginRequired
+], async (req, res) => {
+    const curator = await Group.getCurator(req.body.group_id);
+   
+    if (curator == null) {
+        return res.status(204).end();
+    }
+
+    curator.is_activated = Boolean(curator.is_activated);
+
+    curator.group = {
+        group_id : curator.group_id,
+        specialty_id : curator.specialty_id,
+        course : curator.course,
+        subgroup : curator.subgroup,
+        name : curator.name,
+        group_name : `${curator.specialty_id}${curator.course}${curator.subgroup}`
+    };
+
+    delete curator.group_id;
+    delete curator.specialty_id;
+    delete curator.course;
+    delete curator.subgroup;
+    delete curator.name;
+
+    res.status(200).json(curator);
 });
 
 module.exports = router
