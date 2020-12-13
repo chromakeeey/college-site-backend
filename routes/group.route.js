@@ -211,4 +211,28 @@ router.get('/groups/:id/curator', [
     res.status(200).json(curator);
 });
 
+router.get('/groups/:id/members', [
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+], [
+    middlewares.validateData,
+    middlewares.loginRequired
+], async (req, res) => {
+    const members = await Group.getGroupMembers(req.params.id);
+   
+    if (members.length <= 0) {
+        return res.status(204).end();
+    }
+
+    members.forEach(member =>{
+        member.is_activated = Boolean(member.is_activated);
+        member.is_curator = member.account_type === 2;
+
+        delete member.account_type;
+    });
+
+    res.status(200).json(members);
+});
+
 module.exports = router

@@ -96,8 +96,35 @@ const getCurator = async (groupId) => {
     return rows[0];
 };
 
+const getGroupMembers = async(groupId) => {
+    const sql = `
+        SELECT DISTINCT
+            u.account_type,
+            u.id,
+            u.first_name,
+            u.last_name,
+            u.father_name,
+            u.is_activated
+        FROM 
+            \`student\` AS s,
+            \`teacher\` AS t, 
+            \`user\` AS u
+        WHERE
+            (s.group_id = ? AND s.user_id = u.id)
+        OR
+            (t.group_id = ? AND t.user_id = u.id)
+    `;
+    const [rows] = await connectionPool.query(sql, [
+        groupId,
+        groupId
+    ]);
+
+    return rows;
+};
+
 module.exports = {
     getGroups,
+    getGroupMembers,
     getGroup,
     getCurator,
     addGroup,
