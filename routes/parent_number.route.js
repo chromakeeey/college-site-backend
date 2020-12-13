@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { body } = require("express-validator");
+const { body, param, query } = require("express-validator");
 
 const router = Router();
 const AccountType = require('../helpers/AccountType');
@@ -54,6 +54,123 @@ router.post('/parent-numbers', [
     });
     
     return res.status(200).end();
+});
+
+router.put('/parent-numbers/:id/first-name', [
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('first_name')
+        .exists().withMessage('This parameter is required.')
+], [
+    middlewares.validateData,
+    middlewares.loginRequired
+], async (req, res) => {
+    if (req.session.userId !== req.params.id && (!req.session.isAdmin && req.session.accountType != AccountType.STUDENT)) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
+    const result = await ParentNumber.setParentLastName(req.params.id, req.body.first_name);
+
+    res.status(result ? 201 : 404).end();
+});
+
+router.put('/parent-numbers/:id/last-name', [
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('last_name')
+        .exists().withMessage('This parameter is required.')
+], [
+    middlewares.validateData,
+    middlewares.loginRequired
+], async (req, res) => {
+    if (req.session.userId !== req.params.id && (!req.session.isAdmin && req.session.accountType != AccountType.STUDENT)) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
+    const result = await ParentNumber.setParentLastName(req.params.id, req.body.last_name);
+
+    res.status(result ? 201 : 404).end();
+});
+
+router.put('/parent-numbers/:id/phone', [
+    param('id')
+        .exists().withMessage('This parameter is required')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('phone')
+        .exists().withMessage('This parameter is required')
+        .isMobilePhone().withMessage('This mobile number is incorrect')
+], [
+    middlewares.validateData,
+    middlewares.loginRequired
+], async (req, res) => {
+    if (req.session.userId !== req.params.id && (!req.session.isAdmin && req.session.accountType != AccountType.STUDENT)) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
+    const result = await ParentNumber.setParentPhoneNumber(req.params.id, req.body.phone);
+
+    res.status(result ? 201 : 404).end();
+});
+
+router.put('/parent-numbers/:id/role', [
+    param('id')
+        .exists().withMessage('This parameter is required')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('role')
+        .exists().withMessage('This parameter is required')
+], [
+    middlewares.validateData,
+    middlewares.loginRequired
+], async (req, res) => {
+    if (req.session.userId !== req.params.id && (!req.session.isAdmin && req.session.accountType != AccountType.STUDENT)) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
+    const result = await ParentNumber.setParentRole(req.params.id, req.body.role);
+
+    res.status(result ? 201 : 404).end();
+});
+
+router.delete('/parent-numbers/:id',
+    param('id')
+        .exists().withMessage('This parameter is required')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+[
+    middlewares.validateData,
+    middlewares.loginRequired,
+], async (req, res) => {
+    if (req.session.userId !== req.params.id && (!req.session.isAdmin && req.session.accountType != AccountType.STUDENT)) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
+    const result = await ParentNumber.deleteParent(req.params.id);
+
+    res.status(result ? 200 : 404).end();
+});
+
+router.get('/parent-numbers', [
+    query('user_id')
+        .isInt().toInt().withMessage('The value should be of type integer.')
+        .optional()
+], [
+    middlewares.validateData,
+    middlewares.loginRequired
+], async (req, res) => {
+    if (req.session.userId !== req.query.user_id && (!req.session.isAdmin && req.session.accountType != AccountType.STUDENT)) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
+    console.log(`user_id: ${req.query.user_id}`);
+
+    const parents = await ParentNumber.getParents(req.query.user_id);
+
+    if (parents.length <= 0) {
+        return res.status(204).end();
+    }
+
+    res.status(200).json(parents);
 });
 
 module.exports = router
