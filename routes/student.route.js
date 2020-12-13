@@ -1,5 +1,6 @@
 const { Router } = require("express");
 const { body, query } = require("express-validator");
+const { param } = require('express-validator');
 const router = Router();
 
 const AppError = require('../helpers/AppError');
@@ -155,6 +156,24 @@ router.post('/students', [
     })
 
     res.status(202).end();
+});
+
+router.put('/students/:id/group-id', [
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('group_id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+], [
+    middlewares.validateData,
+    middlewares.loginRequired,
+    middlewares.adminPrivilegeRequired
+], async (req, res) => {
+    
+    const result = await Student.setStudentGroup(req.params.id, req.body.group_id);
+
+    res.status(result ? 201 : 404).end();
 });
 
 module.exports = router
