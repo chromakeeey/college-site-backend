@@ -22,6 +22,72 @@ const addParentNumber = async ({
     ]);
 };
 
+const setParentFirstName = async(parentId, newFirstName) => {
+    const sql = 'UPDATE `student_parent_number` SET first_name = ? WHERE id = ?';
+
+    const [rows] = await connectionPool.query(sql, [
+        newFirstName,
+        parentId
+    ]);
+
+    return rows.affectedRows > 0;
+};
+
+const setParentLastName = async(parentId, newLastName) => {
+    const sql = 'UPDATE `student_parent_number` SET last_name = ? WHERE id = ?';
+
+    const [rows] = await connectionPool.query(sql, [
+        newLastName,
+        parentId
+    ]);
+
+    return rows.affectedRows > 0;
+};
+
+const setParentPhoneNumber = async (parentId, newPhoneNumber) => {
+    const sql = 'UPDATE `student_parent_number` SET phone = ? WHERE id = ?';
+
+    const [rows] = await connectionPool.query(sql, [
+        newPhoneNumber,
+        parentId
+    ]);
+
+    return rows.affectedRows > 0;
+};
+
+const setParentRole = async (parentId, newParentRole) => {
+    const sql = 'UPDATE `student_parent_number` SET role = ? WHERE id = ?';
+
+    const [rows] = await connectionPool.query(sql, [
+        newParentRole,
+        parentId
+    ]);
+
+    return rows.affectedRows > 0;
+};
+
+const deleteParent = async (parentId) => {
+    const sql = 'DELETE FROM `student_parent_number` WHERE id = ?';
+
+    const [rows] = await connectionPool.query(sql, parentId);
+
+    return rows.affectedRows > 0;
+};
+
+const getParents = async(userId) => {
+    const sql = 'SELECT * FROM `student_parent_number` WHERE user_id = ?';
+
+    const [rows] = await connectionPool.query(sql, userId);
+
+    return rows;
+};
+
 module.exports = {
     addParentNumber,
+    setParentFirstName,
+    setParentLastName,
+    setParentPhoneNumber,
+    setParentRole,
+    deleteParent,
+    getParents
 };
