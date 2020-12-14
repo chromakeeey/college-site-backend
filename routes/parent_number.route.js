@@ -8,6 +8,21 @@ const middlewares = require('./middlewares');
 
 const ParentNumber = require('../mysql/parent_number.commands');
 
+const validateUserIdAndAccountType = async (req, res, next) => {
+    const accountType = req.session.accountType;
+    const userId = req.session.userId;
+    const isAdmin = req.session.isAdmin;
+    const belongsToStudent = await ParentNumber.checkIfBelongsToStudent(req.params.id, userId);
+
+    if ((!belongsToStudent && !isAdmin)
+            || accountType == AccountType.ENROLLEE
+            || accountType == AccountType.TEACHER) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
+    next();
+};
+
 router.post('/parent-numbers', [
     body('user_id')
         .exists().withMessage('This parameter is required.')
@@ -34,16 +49,10 @@ router.post('/parent-numbers', [
             max: 128
         }).withMessage('The value should be in a range from 2 to 128 characters long.'),
 ], [
-    middlewares.loginRequired
+    middlewares.loginRequired,
+    validateUserIdAndAccountType
 ], async (req, res) => {
     const body = req.body;
-    const accountType = req.session.accountType;
-    const userId = req.session.userId;
-
-    if (accountType == AccountType.TEACHER || accountType == AccountType.ENROLLEE
-            || accountType == AccountType.STUDENT && userId != body.user_id) {
-        throw new AppError('Access forbidden.', 403);
-    }
 
     await ParentNumber.addParentNumber({
         userId: body.user_id,
@@ -68,12 +77,9 @@ router.put('/parent-numbers/:id/first-name', [
         }).withMessage('The value must be at least 8 characters and no more than 128 characters.')
 ], [
     middlewares.validateData,
-    middlewares.loginRequired
+    middlewares.loginRequired,
+    validateUserIdAndAccountType
 ], async (req, res) => {
-    if (req.session.userId !== req.params.id && (!req.session.isAdmin && req.session.accountType != AccountType.STUDENT)) {
-        throw new AppError('Access forbidden.', 403);
-    }
-
     const result = await ParentNumber.setParentLastName(req.params.id, req.body.first_name);
 
     res.status(result ? 201 : 404).end();
@@ -91,12 +97,9 @@ router.put('/parent-numbers/:id/last-name', [
         }).withMessage('The value must be at least 8 characters and no more than 128 characters.')
 ], [
     middlewares.validateData,
-    middlewares.loginRequired
+    middlewares.loginRequired,
+    validateUserIdAndAccountType
 ], async (req, res) => {
-    if (req.session.userId !== req.params.id && (!req.session.isAdmin && req.session.accountType != AccountType.STUDENT)) {
-        throw new AppError('Access forbidden.', 403);
-    }
-
     const result = await ParentNumber.setParentLastName(req.params.id, req.body.last_name);
 
     res.status(result ? 201 : 404).end();
@@ -111,12 +114,9 @@ router.put('/parent-numbers/:id/phone', [
         .isMobilePhone().withMessage('This mobile number is incorrect')
 ], [
     middlewares.validateData,
-    middlewares.loginRequired
+    middlewares.loginRequired,
+    validateUserIdAndAccountType
 ], async (req, res) => {
-    if (req.session.userId !== req.params.id && (!req.session.isAdmin && req.session.accountType != AccountType.STUDENT)) {
-        throw new AppError('Access forbidden.', 403);
-    }
-
     const result = await ParentNumber.setParentPhoneNumber(req.params.id, req.body.phone);
 
     res.status(result ? 201 : 404).end();
@@ -134,12 +134,9 @@ router.put('/parent-numbers/:id/role', [
         }).withMessage('The value must be at least 8 characters and no more than 128 characters.'),
 ], [
     middlewares.validateData,
-    middlewares.loginRequired
+    middlewares.loginRequired,
+    validateUserIdAndAccountType
 ], async (req, res) => {
-    if (req.session.userId !== req.params.id && (!req.session.isAdmin && req.session.accountType != AccountType.STUDENT)) {
-        throw new AppError('Access forbidden.', 403);
-    }
-
     const result = await ParentNumber.setParentRole(req.params.id, req.body.role);
 
     res.status(result ? 201 : 404).end();
@@ -152,11 +149,8 @@ router.delete('/parent-numbers/:id',
 [
     middlewares.validateData,
     middlewares.loginRequired,
+    validateUserIdAndAccountType
 ], async (req, res) => {
-    if (req.session.userId !== req.params.id && (!req.session.isAdmin && req.session.accountType != AccountType.STUDENT)) {
-        throw new AppError('Access forbidden.', 403);
-    }
-
     const result = await ParentNumber.deleteParent(req.params.id);
 
     res.status(result ? 200 : 404).end();
@@ -165,18 +159,23 @@ router.delete('/parent-numbers/:id',
 router.get('/parent-numbers', [
     query('user_id')
         .isInt().toInt().withMessage('The value should be of type integer.')
-        .optional()
 ], [
     middlewares.validateData,
     middlewares.loginRequired
 ], async (req, res) => {
-    if (req.session.userId !== req.query.user_id && (!req.session.isAdmin && req.session.accountType != AccountType.STUDENT)) {
+    const accountType = req.session.accountType;
+    const userId = req.session.userId;
+    const isAdmin = req.session.isAdmin;
+
+    // if NOT teacher OR admin OR student AND student specified someone else's user id
+    if ((userId != req.query.user_id && (!isAdmin && accountType != AccountType.TEACHER))
+            || accountType == AccountType.ENROLLEE) {
         throw new AppError('Access forbidden.', 403);
     }
 
     const parents = await ParentNumber.getParents(req.query.user_id);
 
-    if (parents.length <= 0) {
+    if (!parents.length) {
         return res.status(204).end();
     }
 

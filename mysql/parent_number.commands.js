@@ -66,6 +66,16 @@ const setParentRole = async (parentId, newParentRole) => {
     return rows.affectedRows > 0;
 };
 
+const checkIfBelongsToStudent = async (parentId, userId) => {
+    const sql = 'SELECT EXISTS (SELECT 1 FROM student_parent_number WHERE id = ? AND user_id = ?)';
+    const [rows] = await connectionPool.query(sql, [
+        parentId,
+        userId
+    ]);
+
+    return Object.values(rows[0])[0] === 1;
+};
+
 const deleteParent = async (parentId) => {
     const sql = 'DELETE FROM `student_parent_number` WHERE id = ?';
 
@@ -89,5 +99,6 @@ module.exports = {
     setParentPhoneNumber,
     setParentRole,
     deleteParent,
-    getParents
+    getParents,
+    checkIfBelongsToStudent,
 };
