@@ -151,10 +151,13 @@ const getStudentData = async (userId) => {
     return rows[0];
 };
 
-const addStudentData = async (data) => {
+const addStudentData = async ({
+    user_id,
+    group_id
+}) => {
     await connectionPool.query('INSERT INTO student (user_id, group_id) VALUES (?, ?)', [
-        data.user_id,
-        data.group_id
+        user_id,
+        group_id
     ]);
 };
 
