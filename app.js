@@ -37,6 +37,7 @@ app.use('/api/', require('./routes/student.route'));
 app.use('/api/', require('./routes/group.route'));
 app.use('/api/', require('./routes/parent_number.route'));
 app.use('/api', require('./routes/teacher.route'));
+app.use('/api', require('./routes/admin.route'));
 
 app.get('/', (req, res) => {
     res.end('<h1>College site API</h1>');
