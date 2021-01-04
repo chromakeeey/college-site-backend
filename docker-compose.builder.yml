@@ -1,0 +1,22 @@
+version: "2.4"
+services:
+  base:
+    image: node:15
+    volumes:
+      - .:/usr/src/app
+      - node-modules:/usr/src/app/node_modules
+    working_dir: /usr/src/app
+
+  install:
+    extends:
+      service: base
+    entrypoint: bash -c
+    command: ["npm i && npm rebuild bcrypt --build-from-source"]
+
+  bash:
+    extends:
+      service: base
+    command: bash
+
+volumes:
+  node-modules:
