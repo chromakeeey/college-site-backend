@@ -5,7 +5,7 @@ const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const cors = require('cors');
-const Session = require('./sessions/Session');
+const Session = require('./sessions');
 const PORT = process.env.PORT;
 
 app.use(express.json({extended: true}))
