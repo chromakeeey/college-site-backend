@@ -1,7 +1,7 @@
 version: "2.4"
 services:
   base:
-    image: node:15
+    image: node:14.15.4
     volumes:
       - .:/usr/src/app
       - node-modules:/usr/src/app/node_modules

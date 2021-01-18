@@ -1,0 +1,8 @@
+version: "3.7"
+services:
+  backend:
+    command: >
+      bash -c "
+        [ ! -f ../scripts/wait ] && wget https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait -P ../scripts/ && chmod +x ../scripts/wait;
+        ../scripts/wait && npm test
+      "

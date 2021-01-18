@@ -6,21 +6,24 @@ const app = express();
 const morgan = require('morgan');
 const cors = require('cors');
 const Session = require('./sessions');
+const PrettyError = require('pretty-error');
+const pe = new PrettyError();
 
-app.use(express.json({extended: true}))
-app.use(cors())
-app.use(morgan('dev'));
+app.use(express.json({ extended: true }));
+app.use(cors());
+
+if (process.env.NODE_ENV !== 'test') {
+    app.use(morgan('dev'));
+}
 
 app.use(Session({
     secret: process.env.SESSION_SECRET,
     store: (() => {
         if (process.env.SESSION_STORE == 'redis') {
             const RedisStore = require('./sessions/RedisStore');
-            const Redis = require('ioredis');
+            const redisClient = require('./redis/connection');
 
-            return new RedisStore(new Redis(process.env.REDIS_URL, {
-                showFriendlyErrorStack: true
-            }));
+            return new RedisStore(redisClient);
         }
     
         const MemoryStore = require('./sessions/MemoryStore');
@@ -49,6 +52,8 @@ app.use((err, req, res, next) => {
             message: err.message
         });
     } else {
+        console.log(pe.render(err));
+
         res.status(500).json({
             message: 'Something went wrong.'
         });

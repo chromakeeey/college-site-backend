@@ -31,6 +31,9 @@ CREATE TABLE `specialty` (
   `name` varchar(256) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+INSERT INTO `specialty` (`id`, `name`) VALUES
+(5, 'Інженерія програмного забезпечення');
+
 CREATE TABLE `student` (
   `user_id` int(11) NOT NULL,
   `group_id` int(11) NOT NULL

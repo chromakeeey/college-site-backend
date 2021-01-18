@@ -6,7 +6,8 @@
   "scripts": {
     "prod": "node app.js",
     "dev": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/test.js",
+    "coverage": "nyc npm run test"
   },
   "author": "",
   "license": "ISC",
@@ -17,13 +18,20 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-async-errors": "^3.1.1",
-    "express-validator": "^6.6.1",
-    "ioredis": "^4.19.2",
+    "express-validator": "^6.9.2",
+    "ioredis": "^4.19.4",
     "morgan": "^1.10.0",
     "mysql2": "^2.2.5",
+    "pretty-error": "^3.0.3",
     "uid-safe": "^2.1.5"
   },
   "devDependencies": {
-    "nodemon": "^2.0.6"
-  }
+    "chai": "^4.2.0",
+    "japa": "^3.1.1",
+    "nodemon": "^2.0.7",
+    "nyc": "^15.1.0",
+    "superagent": "^6.1.0",
+    "supertest": "^6.0.1"
+  },
+  "_id": "college-site-backend@1.0.0"
 }

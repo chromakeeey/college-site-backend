@@ -8,7 +8,7 @@ const AccountType = require('../helpers/AccountType');
 const HashHelper = require('../helpers/HashHelper');
 
 const User = require('../mysql/user.commands');
-const Teacher = require('../mysql/teacher.commands');
+const Group = require('../mysql/group.commands');
 
 router.post('/teachers', [
     body('first_name')
@@ -52,6 +52,12 @@ router.post('/teachers', [
         throw new AppError('The email address is in use.', 409);
     }
 
+    const isGroupExists = await Group.isExists(data.group_id);
+
+    if (!isGroupExists) {
+        throw new AppError('Wrong group id.', 400);
+    }
+
     const hash = await HashHelper.hash(data.password);
     const teacher = await User.addUser({
         firstName: data.first_name,
@@ -67,4 +73,4 @@ router.post('/teachers', [
     res.status(200).end();
 });
 
-module.exports = router
+module.exports = router;

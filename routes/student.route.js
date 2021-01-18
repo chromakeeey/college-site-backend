@@ -9,6 +9,7 @@ const AccountType = require('../helpers/AccountType');
 const HashHelper = require("../helpers/HashHelper");
 
 const User = require('../mysql/user.commands');
+const Group = require('../mysql/group.commands');
 const Student = require('../mysql/student.commands');
 
 router.get('/students', [
@@ -133,10 +134,16 @@ router.post('/students', [
         .isInt().toInt().withMessage('The value should be of type integer.'),
 ], middlewares.validateData, async (req, res) => {
     const data = req.body;
-    const emailUsed = await User.checkIfEmailUsed(data.email);
+    const isEmailUsed = await User.checkIfEmailUsed(data.email);
 
-    if (emailUsed) {
+    if (isEmailUsed) {
         throw new AppError('The email address is in use.', 409);
+    }
+
+    const isGroupExists = await Group.isExists(data.group_id);
+
+    if (!isGroupExists) {
+        throw new AppError('Wrong group id.', 400);
     }
 
     const hash = await HashHelper.hash(data.password);
@@ -176,4 +183,4 @@ router.put('/students/:id/group-id', [
     res.status(result ? 201 : 404).end();
 });
 
-module.exports = router
+module.exports = router;

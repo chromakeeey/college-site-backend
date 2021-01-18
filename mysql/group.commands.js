@@ -12,6 +12,12 @@ const getGroup = async (groupId) => {
     return rows[0];
 };
 
+const isExists = async (groupId) => {
+    const [rows] = await connectionPool.query('SELECT EXISTS (SELECT 1 FROM `group` WHERE id = ?)', groupId);
+
+    return Object.values(rows[0])[0] === 1;
+};
+
 const addGroup = async ({
     specialtyId, course, subgroup
 }) => {
@@ -132,5 +138,6 @@ module.exports = {
     setGroupCourse,
     setGroupSpecialty,
     setGroupSubgroup,
-    setCurator
-}
+    setCurator,
+    isExists
+};
