@@ -95,10 +95,10 @@ router.get('/users/:id', [
 
     const accountType = await User.getAccountTypeByUserId(req.session.userId);
 
-    // if the current user is not the requested one or admin or teacher
+    // if the current user is not the requested one or admin and teacher
     // and
     // if requested user is not admin or teacher then remove email & phone fields
-    if ((accountType !== AccountType.TEACHER || accountType !== AccountType.ADMINISTRATOR)
+    if ((accountType !== AccountType.TEACHER && accountType !== AccountType.ADMINISTRATOR)
             && req.session.userId !== id
             && user.account_type.id !== AccountType.TEACHER
             && user.account_type.id !== AccountType.ADMINISTRATOR) {
@@ -106,10 +106,10 @@ router.get('/users/:id', [
         delete user.phone;
     }
 
-    if (data && (accountType === AccountType.TEACHER || accountType === AccountType.STUDENT)) {
+    if (data && (user.account_type.id === AccountType.TEACHER || user.account_type.id === AccountType.STUDENT)) {
         user.group = {
             'group_id': data.group_id,
-            'group_name': ''.concat(data.specialty_id, data.course, data.subgroup),
+            'group_name': `${data.specialty_id}${data.course}${data.subgroup}`,
             'specialty_id': data.specialty_id,
             'specialty_name': data.specialty_name,
             'course': data.course,
