@@ -46,13 +46,16 @@ class UserHelper {
         groupId = null
     } = {}) {
         this.accountType = AccountType.TEACHER;
+        this.isCurator = isCurator;
         await this.#generateUser();
 
         if (isCurator) {
-            if (!this.groupId) {
+            if (!groupId) {
                 const group = await new GroupHelper().init();
-                this.groupId = group.id;
+                groupId = group.id;
             }
+    
+            this.groupId = groupId;
 
             await Group.setCurator(this.groupId, this.id);
         }
@@ -82,14 +85,16 @@ class UserHelper {
         this.accountType = AccountType.STUDENT;
         await this.#generateUser();
 
-        if (!this.groupId) {
+        if (!groupId) {
             const group = await new GroupHelper().init();
-            this.groupId = group.id;
+            groupId = group.id;
         }
+
+        this.groupId = groupId;
 
         await Student.addStudentData({
             user_id: this.id,
-            group_id: this.groupId
+            group_id: groupId
         })
 
         return this;

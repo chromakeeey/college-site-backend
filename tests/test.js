@@ -5,4 +5,5 @@ console.error = () => {};
 
 configure({
     files: ['tests/integration/*.test.js'],
+    bail: true
 });
