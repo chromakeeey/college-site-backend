@@ -1,4 +1,4 @@
-const { connectionPool } = require('../../mysql/connection');
+const connectionPool = require('../../mysql/connection');
 const fs = require('fs');
 
 module.exports = async () => {

@@ -1,4 +1,4 @@
-const { connectionPool } = require('./connection');
+const connectionPool = require('./connection');
 
 const addParentNumber = async ({
     userId,

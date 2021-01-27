@@ -9,6 +9,4 @@ const connectionPool = mysql.createPool({
     multipleStatements: true
 });
 
-module.exports = {
-	connectionPool
-};
+module.exports = connectionPool;

@@ -1,4 +1,4 @@
-const { connectionPool } = require('./connection');
+const connectionPool = require('./connection');
 
 const checkIfEmailUsed = async (email) => {
     const [rows] = await connectionPool.query('SELECT EXISTS (SELECT 1 FROM user WHERE email = ?)', email)

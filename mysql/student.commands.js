@@ -1,4 +1,4 @@
-const { connectionPool } = require('./connection');
+const connectionPool = require('./connection');
 const AccountType = require('../helpers/AccountType');
 
 const getStudentsCount = async ({

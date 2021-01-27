@@ -1,4 +1,4 @@
-const { connectionPool } = require('./connection');
+const connectionPool = require('./connection');
 
 const getTeacherData = async (userId) => {
     const sql = `

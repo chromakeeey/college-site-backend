@@ -1,4 +1,4 @@
-const { connectionPool } = require("./connection");
+const connectionPool = require('./connection');
 
 const getGroups = async () => {
     const [rows] = await connectionPool.query('SELECT * FROM `group`');
