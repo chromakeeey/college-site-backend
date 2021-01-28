@@ -41,6 +41,8 @@ router.get('/students', [
         .optional(),
     query('group_id')
         .isInt().toInt().withMessage('The value should be of type integer.')
+        .optional(),
+    query('search')
         .optional()
 ], [
     middlewares.validateData,
@@ -56,7 +58,8 @@ router.get('/students', [
         offset: offset,
         limit: queries.count,
         groupId: queries.group_id,
-        isActivated: queries.is_activated
+        isActivated: queries.is_activated,
+        search: queries.search
     });
 
     if (!students.length) {
