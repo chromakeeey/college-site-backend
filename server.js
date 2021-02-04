@@ -10,7 +10,7 @@ const PrettyError = require('pretty-error');
 const pe = new PrettyError();
 
 app.use(express.json({ extended: true }));
-app.options('*', cors());
+app.options('https://amicitic.com', cors());
 
 if (process.env.NODE_ENV !== 'test') {
     app.use(morgan('dev'));
