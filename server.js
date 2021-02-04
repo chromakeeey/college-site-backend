@@ -10,7 +10,7 @@ const PrettyError = require('pretty-error');
 const pe = new PrettyError();
 
 app.use(express.json({ extended: true }));
-app.use(cors());
+app.options('*', cors());
 
 if (process.env.NODE_ENV !== 'test') {
     app.use(morgan('dev'));
