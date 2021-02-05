@@ -1,4 +1,4 @@
-const connectionPool = require('./connection');
+const { connectionPool } = require('./connection');
 const AccountType = require('../helpers/AccountType');
 
 const getStudentsCount = async ({
@@ -44,6 +44,8 @@ const getStudentsCount = async ({
         AccountType.STUDENT,
     ].concat(whereCaluse.values));
 
+    
+
     return Object.values(rows[0])[0];
 };
 
@@ -53,8 +55,7 @@ const getStudents = async ({
     isActivated,
     groupId,
     limit,
-    offset,
-    search
+    offset
 } = {}) => {
     const whereCaluse = (() => {
         const conditions = [];
@@ -72,24 +73,6 @@ const getStudents = async ({
         if (groupId != undefined) {
             conditions.push('student.group_id = ?');
             values.push(groupId);
-        }
-
-        if (search != undefined) {
-            conditions.push(`
-                user.first_name LIKE ?
-                OR
-                user.last_name LIKE ?
-                OR
-                user.father_name LIKE ?
-                OR
-                user.phone LIKE ?
-                OR
-                user.email LIKE ?
-            `);
-
-            for (let i = 0; i < 5; i++) {
-                values.push(search);
-            }
         }
 
         if (conditions.length) {
@@ -134,7 +117,7 @@ const getStudents = async ({
         \`group\`.specialty_id = specialty.id
         WHERE
             user.account_type = ? ${whereCaluse.conditions}
-        ${orderByClause}
+        ${ orderByClause }
         ${limitStatement}
         ${offsetStatement}
     `;
