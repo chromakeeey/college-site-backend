@@ -11,7 +11,7 @@ router.get('/groups', async (req, res) => {
     const groups = await Group.getGroups();
 
     if (!groups.length) {
-        res.status(204).end();
+        return res.status(204).end();
     }
 
     groups.forEach(group => {
