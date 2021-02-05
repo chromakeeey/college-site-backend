@@ -10,7 +10,8 @@ const PrettyError = require('pretty-error');
 const pe = new PrettyError();
 
 app.use(cors({
-    origin: 'https://amicitic.com'
+    origin: 'https://amicitic.com',
+    credentials: true
 }));
 app.use(express.json({ extended: true }));
 
