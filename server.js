@@ -9,8 +9,9 @@ const Session = require('./sessions');
 const PrettyError = require('pretty-error');
 const pe = new PrettyError();
 
-app.use(cors());
-app.options('https://amicitic.com', cors());
+app.use(cors({
+    origin: 'https://amicitic.com'
+}));
 app.use(express.json({ extended: true }));
 
 if (process.env.NODE_ENV !== 'test') {
