@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { query } = require('express-validator');
+const { query, param } = require('express-validator');
 const router = Router();
 const multer = require('multer');
 const upload = multer({ dest: './public/uploads/images' });
