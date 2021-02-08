@@ -260,4 +260,40 @@ router.put('/users/:id/activated', [
     res.status(result ? 201 : 500).end();
 });
 
-module.exports = router
+router.put('/users/:id/email', [
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('email')
+        .exists().withMessage('This parameter is required.')
+        .isBoolean().toBoolean().withMessage('The value should be of type boolean.'),
+], [
+    middlewares.validateData,
+    middlewares.loginRequired,
+    middlewares.adminPrivilegeRequired,
+], async (req, res) => {
+    const result = await User.setEmail(req.params.id, req.body.email);
+
+    res.status(result ? 201 : 404).end();
+});
+
+router.put('/users/:id/password', [
+    param('id')
+        .exists().withMessage('This parameter is required.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    body('password')
+        .exists().withMessage('This parameter is required.')
+        .isLength({
+            min: 8,
+        }).withMessage('The value should be at least 8 characters long.'),
+], [
+    middlewares.validateData,
+    middlewares.loginRequired,
+    middlewares.adminPrivilegeRequired,
+], async (req, res) => {
+    const result = await User.setPassword(req.params.id, req.body.password);
+
+    res.status(result ? 201 : 404).end();
+});
+
+module.exports = router;

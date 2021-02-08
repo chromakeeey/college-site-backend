@@ -141,6 +141,24 @@ const getActivationStatus = async (userId) => {
     return (!rows.length) ? false : Object.values(rows[0])[0] === 1;
 };
 
+const setEmail = async (userId, email) => {
+    const [rows] = await connectionPool.query('UPDATE user SET email = ? WHERE id = ?', [
+        email,
+        userId
+    ]);
+
+    return rows.affectedRows > 0;
+};
+
+const setPassword = async (userId, password) => {
+    const [rows] = await connectionPool.query('UPDATE user SET password = ? WHERE id = ?', [
+        password,
+        userId
+    ]);
+
+    return rows.affectedRows > 0;
+};
+
 module.exports = {
     addUser,
     getUserInfo,
@@ -154,5 +172,7 @@ module.exports = {
     setPhoneNumber,
     deleteUser,
     setActivationStatus,
-    getActivationStatus
-}
+    getActivationStatus,
+    setEmail,
+    setPassword,
+};
