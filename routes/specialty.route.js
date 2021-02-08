@@ -6,8 +6,6 @@ const Specialty = require('../mysql/specialty.commands');
 router.get('/specialties', async (req, res) => {
     const specialties = await Specialty.getSpecialties();
 
-    console.log(specialties);
-
     if (!specialties.length) {
         return res.status(204).end();
     }

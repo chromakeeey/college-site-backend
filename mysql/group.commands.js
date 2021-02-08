@@ -70,6 +70,20 @@ const setCurator = async (curator) => {
     return rows.affectedRows > 0;
 };
 
+const isCurator = async (userId, groupId) => {
+    const sql = 'SELECT EXISTS (SELECT 1 FROM teacher WHERE group_id = ? AND user_id = ?)';
+    const [rows] = await connectionPool.query(sql, [groupId, userId]);
+
+    return Object.values(rows[0])[0] === 1;
+};
+
+const isStudentInGroup = async (userId, groupId) => {
+    const sql = 'SELECT EXISTS (SELECT 1 FROM student WHERE group_id = ? AND user_id = ?)';
+    const [rows] = await connectionPool.query(sql, [groupId, userId]);
+
+    return Object.values(rows[0])[0] === 1;
+};
+
 const getCurator = async (groupId) => {
     const sql = `
         SELECT
@@ -139,5 +153,7 @@ module.exports = {
     setGroupSpecialty,
     setGroupSubgroup,
     setCurator,
-    isExists
+    isExists,
+    isCurator,
+    isStudentInGroup,
 };

@@ -13,7 +13,9 @@ app.use(cors({
     origin: ['https://amicitic.com', 'http://localhost'],
     credentials: true
 }));
+
 app.use(express.json({ extended: true }));
+app.use(express.static('public'));
 
 if (process.env.NODE_ENV !== 'test') {
     app.use(morgan('dev'));
@@ -45,6 +47,7 @@ app.use('/api/', require('./routes/teacher.route'));
 app.use('/api/', require('./routes/admin.route'));
 app.use('/api/', require('./routes/account_type.route'));
 app.use('/api/', require('./routes/specialty.route'));
+app.use('/api/', require('./routes/news.route'));
 
 app.get('/', (req, res) => {
     res.end('<h1>College site API</h1>');
