@@ -53,7 +53,7 @@ router.post('/news', [
         return res.status(400).json({ errors: errors });
     }
 
-    if (!req.session.isAdmin || !(await Group.isCurator(req.session.userId, queries.group_id))) {
+    if (!req.session.isAdmin || queries.group_id && !(await Group.isCurator(req.session.userId, queries.group_id)) && !req.session.isAdmin) {
         await fs.unlinkSync(req.file.path);
 
         throw new AppError('Access forbidden.', 403);
@@ -98,7 +98,7 @@ router.get('/news', [
     const accountType = await User.getAccountTypeByUserId(req.session.userId);
     const offset = (queries.page) ? (queries.count * queries.page) - queries.count : 0;
 
-    if (queries.group_id && (accountType != AccountType.TEACHER || accountType != AccountType.STUDENT || accountType != AccountType.ADMINISTRATOR)) {
+    if (queries.group_id && (accountType === AccountType.ENROLLEE)) {
         throw new AppError('Access forbidden.', 403);
     } else if (queries.group_id && accountType != AccountType.ADMINISTRATOR) {
         let result = false;
