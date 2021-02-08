@@ -60,7 +60,7 @@ router.get('/users/:id', [
         .isInt().toInt().withMessage('The value should be of type integer.'),
 ], [
     middlewares.validateData,
-    middlewares.loginRequired
+    middlewares.loginRequired,
 ], async (req, res) => {
     const id = req.params.id;
     const user = await User.getUserInfo(id);
@@ -123,10 +123,10 @@ router.get('/users/:id', [
 router.post('/users/:id/logout', [
     param('id')
         .exists().withMessage('This parameter is required.')
-        .isInt().toInt().withMessage('The value should be of type integer.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
 ], [
     middlewares.validateData,
-    middlewares.loginRequired
+    middlewares.loginRequired,
 ], async (req, res) => {
     if (req.params.id === req.session.userId) {
         await req.session.delete();
@@ -148,10 +148,10 @@ router.put('/users/:id/first-name', [
         .exists().withMessage('This parameter is required.')
         .isInt().toInt().withMessage('The value should be of type integer.'),
     body('first_name')
-        .exists().withMessage('This parameter is required.')
+        .exists().withMessage('This parameter is required.'),
 ], [
     middlewares.validateData,
-    middlewares.loginRequired
+    middlewares.loginRequired,
 ], async (req, res) => {
     if (req.session.userId !== req.params.id && !req.session.isAdmin) {
         throw new AppError('Access forbidden.', 403);
@@ -167,10 +167,10 @@ router.put('/users/:id/last-name', [
         .exists().withMessage('This parameter is required.')
         .isInt().toInt().withMessage('The value should be of type integer.'),
     body('last_name')
-        .exists().withMessage('This parameter is required.')
+        .exists().withMessage('This parameter is required.'),
 ], [
     middlewares.validateData,
-    middlewares.loginRequired
+    middlewares.loginRequired,
 ], async (req, res) => {
     if (req.session.userId !== req.params.id && !req.session.isAdmin) {
         throw new AppError('Access forbidden.', 403);
@@ -186,10 +186,10 @@ router.put('/users/:id/father-name', [
         .exists().withMessage('This parameter is required.')
         .isInt().toInt().withMessage('The value should be of type integer.'),
     body('father_name')
-        .exists().withMessage('This parameter is required.')
+        .exists().withMessage('This parameter is required.'),
 ], [
     middlewares.validateData,
-    middlewares.loginRequired
+    middlewares.loginRequired,
 ], async (req, res) => {
     if (req.session.userId !== req.params.id && !req.session.isAdmin) {
         throw new AppError('Access forbidden.', 403);
@@ -206,10 +206,10 @@ router.put('/users/:id/phone', [
         .isInt().toInt().withMessage('The value should be of type integer.'),
     body('phone')
         .exists().withMessage('This parameter is required')
-        .isMobilePhone().withMessage('This mobile number is incorrect')
+        .isMobilePhone().withMessage('This mobile number is incorrect'),
 ], [
     middlewares.validateData,
-    middlewares.loginRequired
+    middlewares.loginRequired,
 ], async (req, res) => {
     if (req.session.userId !== req.params.id && !req.session.isAdmin) {
         throw new AppError('Access forbidden.', 403);
@@ -227,7 +227,7 @@ router.delete('/users/:id',
 [
     middlewares.validateData,
     middlewares.loginRequired,
-    middlewares.adminPrivilegeRequired
+    middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
     if (req.session.userId === req.params.id) {
         throw new AppError('Access forbidden.', 403);

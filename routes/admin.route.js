@@ -1,5 +1,5 @@
-const { Router } = require("express");
-const { body} = require("express-validator");
+const { Router } = require('express');
+const { body} = require('express-validator');
 
 const router = Router();
 const AccountType = require('../helpers/AccountType');
@@ -53,7 +53,7 @@ router.post('/admins', [
     }
 
     const hash = await HashHelper.hash(data.password);
-    const admin = await Admin.addAdmin({
+    await Admin.addAdmin({
         firstName: data.first_name,
         lastName: data.last_name,
         fatherName: data.father_name,
@@ -61,10 +61,10 @@ router.post('/admins', [
         phone: data.phone,
         accountType: AccountType.ADMINISTRATOR,
         isActivated: true,
-        password: hash
+        password: hash,
     });
 
     res.status(200).end();
 });
 
-module.exports = router
+module.exports = router;

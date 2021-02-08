@@ -179,5 +179,5 @@ module.exports = {
     addStudentData,
     getStudents,
     getStudentsCount,
-    setStudentGroup
-}
+    setStudentGroup,
+};

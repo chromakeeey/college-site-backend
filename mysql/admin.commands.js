@@ -31,5 +31,5 @@ const addAdmin = async ({
 };
 
 module.exports = {
-    addAdmin
+    addAdmin,
 };

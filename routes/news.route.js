@@ -136,7 +136,7 @@ router.get('/news', [
     res.status(200).json({
         'page_count': pageCount,
         'current_item_count': news.length,
-        'result': news
+        'result': news,
     });
 });
 

@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { body, param } = require('express-validator');
+const { body } = require('express-validator');
 const router = Router();
 
 const AppError = require('../helpers/AppError');
@@ -43,7 +43,7 @@ router.post('/teachers', [
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
-    middlewares.adminPrivilegeRequired
+    middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
     const data = req.body;    
     const isEmailUsed = await User.checkIfEmailUsed(data.email);
@@ -67,7 +67,7 @@ router.post('/teachers', [
         phone: data.phone,
         accountType: AccountType.TEACHER,
         isActivated: true,
-        password: hash
+        password: hash,
     });
 
     res.status(200).end();

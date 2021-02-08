@@ -113,4 +113,4 @@ class RedisStore {
     }
 }
 
-module.exports = RedisStore
+module.exports = RedisStore;

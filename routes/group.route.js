@@ -1,5 +1,5 @@
-const { Router } = require("express");
-const { body, param } = require("express-validator");
+const { Router } = require('express');
+const { body, param } = require('express-validator');
 
 const router = Router();
 const AppError = require('../helpers/AppError');
@@ -15,7 +15,7 @@ router.get('/groups', async (req, res) => {
     }
 
     groups.forEach(group => {
-        group.group_name = ''.concat(group.specialty_id, group.course, group.subgroup);
+        group.group_name = `${group.specialty_id}${group.course}${group.subgroup}`;
     });
 
     res.status(200).json(groups);
@@ -30,17 +30,17 @@ router.post('/groups', [
         .isInt().toInt().withMessage('The value should be of type integer.'),
     body('subgroup')
         .exists().withMessage('This parameter is required.')
-        .isInt().toInt().withMessage('The value should be of type integer')
+        .isInt().toInt().withMessage('The value should be of type integer'),
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
-    middlewares.adminPrivilegeRequired
+    middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
     const data = req.body;
     const id = await Group.addGroup({
         specialtyId: data.specialty_id,
         course: data.course,
-        subgroup: data.subgroup
+        subgroup: data.subgroup,
     });
 
     res.status(201).json({ id: id });
@@ -183,7 +183,7 @@ router.get('/groups/:id/curator', [
         .isInt().toInt().withMessage('The value should be of type integer.'),
 ], [
     middlewares.validateData,
-    middlewares.loginRequired
+    middlewares.loginRequired,
 ], async (req, res) => {
     const curator = await Group.getCurator(req.body.group_id);
    
@@ -217,7 +217,7 @@ router.get('/groups/:id/members', [
         .isInt().toInt().withMessage('The value should be of type integer.'),
 ], [
     middlewares.validateData,
-    middlewares.loginRequired
+    middlewares.loginRequired,
 ], async (req, res) => {
     const members = await Group.getGroupMembers(req.params.id);
    
@@ -235,4 +235,4 @@ router.get('/groups/:id/members', [
     res.status(200).json(members);
 });
 
-module.exports = router
+module.exports = router;

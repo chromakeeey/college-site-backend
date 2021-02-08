@@ -1,5 +1,5 @@
-const { Router } = require("express");
-const { body, param, query } = require("express-validator");
+const { Router } = require('express');
+const { body, param, query } = require('express-validator');
 
 const router = Router();
 const AccountType = require('../helpers/AccountType');
@@ -50,7 +50,7 @@ router.post('/parent-numbers', [
         }).withMessage('The value should be in a range from 2 to 128 characters long.'),
 ], [
     middlewares.loginRequired,
-    validateUserIdAndAccountType
+    validateUserIdAndAccountType,
 ], async (req, res) => {
     const body = req.body;
 
@@ -59,7 +59,7 @@ router.post('/parent-numbers', [
         firstName: body.first_name,
         lastName: body.last_name,
         role: body.role,
-        phone: body.phone
+        phone: body.phone,
     });
     
     return res.status(200).end();
@@ -74,11 +74,11 @@ router.put('/parent-numbers/:id/first-name', [
         .isLength({
             min: 2,
             max: 128
-        }).withMessage('The value must be at least 8 characters and no more than 128 characters.')
+        }).withMessage('The value must be at least 8 characters and no more than 128 characters.'),
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
-    validateUserIdAndAccountType
+    validateUserIdAndAccountType,
 ], async (req, res) => {
     const result = await ParentNumber.setParentLastName(req.params.id, req.body.first_name);
 
@@ -94,11 +94,11 @@ router.put('/parent-numbers/:id/last-name', [
         .isLength({
             min: 2,
             max: 128
-        }).withMessage('The value must be at least 8 characters and no more than 128 characters.')
+        }).withMessage('The value must be at least 8 characters and no more than 128 characters.'),
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
-    validateUserIdAndAccountType
+    validateUserIdAndAccountType,
 ], async (req, res) => {
     const result = await ParentNumber.setParentLastName(req.params.id, req.body.last_name);
 
@@ -111,11 +111,11 @@ router.put('/parent-numbers/:id/phone', [
         .isInt().toInt().withMessage('The value should be of type integer.'),
     body('phone')
         .exists().withMessage('This parameter is required')
-        .isMobilePhone().withMessage('This mobile number is incorrect')
+        .isMobilePhone().withMessage('This mobile number is incorrect'),
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
-    validateUserIdAndAccountType
+    validateUserIdAndAccountType,
 ], async (req, res) => {
     const result = await ParentNumber.setParentPhoneNumber(req.params.id, req.body.phone);
 
@@ -135,7 +135,7 @@ router.put('/parent-numbers/:id/role', [
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
-    validateUserIdAndAccountType
+    validateUserIdAndAccountType,
 ], async (req, res) => {
     const result = await ParentNumber.setParentRole(req.params.id, req.body.role);
 
@@ -149,7 +149,7 @@ router.delete('/parent-numbers/:id',
 [
     middlewares.validateData,
     middlewares.loginRequired,
-    validateUserIdAndAccountType
+    validateUserIdAndAccountType,
 ], async (req, res) => {
     const result = await ParentNumber.deleteParent(req.params.id);
 
@@ -158,10 +158,10 @@ router.delete('/parent-numbers/:id',
 
 router.get('/parent-numbers', [
     query('user_id')
-        .isInt().toInt().withMessage('The value should be of type integer.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
 ], [
     middlewares.validateData,
-    middlewares.loginRequired
+    middlewares.loginRequired,
 ], async (req, res) => {
     const accountType = req.session.accountType;
     const userId = req.session.userId;
@@ -182,4 +182,4 @@ router.get('/parent-numbers', [
     res.status(200).json(parents);
 });
 
-module.exports = router
+module.exports = router;

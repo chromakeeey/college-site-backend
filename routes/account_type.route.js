@@ -1,4 +1,4 @@
-const { Router } = require("express");
+const { Router } = require('express');
 
 const router = Router();
 const middlewares = require('./middlewares');
@@ -18,4 +18,4 @@ router.get('/account-types', [
     res.status(200).json(accountTypes);
 });
 
-module.exports = router
+module.exports = router;

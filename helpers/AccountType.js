@@ -5,4 +5,4 @@ const AccountType = {
     ENROLLEE: 4
 };
 
-module.exports = AccountType
+module.exports = AccountType;

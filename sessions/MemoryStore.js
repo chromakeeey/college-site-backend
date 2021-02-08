@@ -76,4 +76,4 @@ class MemoryStore {
     }
 }
 
-module.exports = MemoryStore
+module.exports = MemoryStore;

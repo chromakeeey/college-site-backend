@@ -26,4 +26,4 @@ const getTeacherData = async (userId) => {
 
 module.exports = {
     getTeacherData,
-}
+};

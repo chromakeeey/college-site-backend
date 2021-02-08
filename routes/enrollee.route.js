@@ -1,5 +1,5 @@
-const { Router } = require("express");
-const { body } = require("express-validator");
+const { Router } = require('express');
+const { body } = require('express-validator');
 const router = Router();
 
 const AppError = require('../helpers/AppError');
@@ -57,9 +57,9 @@ router.post('/enrollees', [
         phone: data.phone,
         accountType: AccountType.ENROLLEE,
         isActivated: true,
-        password: hash
+        password: hash,
     });
     res.status(200).end();
 });
 
-module.exports = router
+module.exports = router;

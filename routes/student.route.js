@@ -1,5 +1,5 @@
-const { Router } = require("express");
-const { body, query } = require("express-validator");
+const { Router } = require('express');
+const { body, query } = require('express-validator');
 const { param } = require('express-validator');
 const router = Router();
 
@@ -43,10 +43,10 @@ router.get('/students', [
         .isInt().toInt().withMessage('The value should be of type integer.')
         .optional(),
     query('search')
-        .optional()
+        .optional(),
 ], [
     middlewares.validateData,
-    middlewares.loginRequired
+    middlewares.loginRequired,
 ], async (req, res) => {
     const queries = req.query;
     const accountType = await User.getAccountTypeByUserId(req.session.userId);
@@ -59,7 +59,7 @@ router.get('/students', [
         limit: queries.count,
         groupId: queries.group_id,
         isActivated: queries.is_activated,
-        search: queries.search
+        search: queries.search,
     });
 
     if (!students.length) {
@@ -78,7 +78,7 @@ router.get('/students', [
             'specialty_id': student.specialty_id,
             'specialty_name': student.specialty_name,
             'course': student.course,
-            'subgroup': student.subgroup
+            'subgroup': student.subgroup,
         };
         student.is_activated = Boolean(student.is_activated);
 
@@ -91,14 +91,14 @@ router.get('/students', [
 
     const studentsCount = await Student.getStudentsCount({
         isActivated: queries.is_activated,
-        groupId: queries.group_id
+        groupId: queries.group_id,
     });
     const pageCount = Math.ceil(studentsCount / queries.count);
 
     res.status(200).json({
         'page_count': pageCount,
         'current_item_count': students.length,
-        'result': students
+        'result': students,
     });
 });
 
@@ -158,12 +158,12 @@ router.post('/students', [
         phone: data.phone,
         accountType: AccountType.STUDENT,
         isActivated: false,
-        password: hash
-    });;
+        password: hash,
+    });
     await Student.addStudentData({
         user_id: userId,
-        group_id: data.group_id
-    })
+        group_id: data.group_id,
+    });
 
     res.status(202).end();
 });
@@ -178,9 +178,8 @@ router.put('/students/:id/group-id', [
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
-    middlewares.adminPrivilegeRequired
+    middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
-    
     const result = await Student.setStudentGroup(req.params.id, req.body.group_id);
 
     res.status(result ? 201 : 404).end();

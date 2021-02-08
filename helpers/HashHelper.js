@@ -14,4 +14,4 @@ class HashHelper {
     }
 }
 
-module.exports = HashHelper
+module.exports = HashHelper;

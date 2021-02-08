@@ -70,5 +70,5 @@ class Session {
 module.exports = {
     generateSessionId,
     hashSessionId,
-    Session
-}
+    Session,
+};

@@ -22,4 +22,4 @@ class Cookie {
     }
 }
 
-module.exports = Cookie
+module.exports = Cookie;

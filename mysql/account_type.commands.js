@@ -7,5 +7,5 @@ const getListOfAccountTypes = async() => {
 };
 
 module.exports = {
-    getListOfAccountTypes
+    getListOfAccountTypes,
 };
