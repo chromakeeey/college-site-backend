@@ -272,6 +272,12 @@ router.put('/users/:id/email', [
     middlewares.loginRequired,
     middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
+    const emailUsed = await User.checkIfEmailUsed(req.body.email);
+
+    if (emailUsed) {
+        throw new AppError('The email address is in use', 409)
+    }
+
     const result = await User.setEmail(req.params.id, req.body.email);
 
     res.status(result ? 201 : 404).end();
