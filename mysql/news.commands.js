@@ -1,9 +1,10 @@
 const connectionPool = require('./connection');
 
 const addNews = async ({ title, imageName, content }) => {
-    const sql = 'INSERT INTO news (title, image_name, content) VALUES (?, ?, ?)';
+    const sql = 'INSERT INTO news (title, image_name, content, date) VALUES (?, ?, ?, ?)';
     const [rows] = await connectionPool.query(sql, [
-        title, imageName, content
+        title, imageName, content,
+        new Date().toISOString().slice(0, 19).replace('T', ' '),
     ]);
 
     return rows.insertId;

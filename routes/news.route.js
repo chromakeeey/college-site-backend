@@ -64,8 +64,6 @@ router.post('/news', [
     req.file.path += `.${extension}`;
     req.file.filename += `.${extension}`;
 
-    console.log(req.file);
-
     const id = (!req.body.group_id) ? await News.addNews({
         title: req.body.title,
         imageName: req.file.filename,
