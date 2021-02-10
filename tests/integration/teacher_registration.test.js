@@ -5,7 +5,6 @@ const test = require('japa');
 
 const databaseReset = require('../helpers/database_reset');
 const UserHelper = require('../helpers/UserHelper');
-const GroupHelper = require('../helpers/GroupHelper');
 
 const User = require('../../mysql/user.commands');
 const AccountType = require('../../helpers/AccountType');
@@ -15,7 +14,6 @@ test.group('Register a teacher', (group) => {
 
     group.test('register a teacher', async () => {
         const admin = await new UserHelper({ email: 'admin@example.com' }).initAdmin();
-        const createdGroup = await new GroupHelper().init();
         const agent = await request(app);
         const payload = {
             first_name: 'John',
@@ -23,8 +21,7 @@ test.group('Register a teacher', (group) => {
             father_name: 'Bob',
             phone: '+12124798964',
             email: 'john.smith@example.com',
-            password: 'password',
-            group_id: createdGroup.id
+            password: 'password'
         };
 
         const res = await agent
@@ -41,7 +38,6 @@ test.group('Register a teacher', (group) => {
 
     group.test('register a teacher with already existing email', async () => {
         const admin = await new UserHelper({ email: 'admin@example.com' }).initAdmin();
-        const createdGroup = await new GroupHelper().init();
         const agent = await request(app);
         await new UserHelper().initEnrollee();
 
@@ -54,33 +50,9 @@ test.group('Register a teacher', (group) => {
                 father_name: 'Bob',
                 phone: '+12124798964',
                 email: 'john.smith@example.com',
-                password: 'password',
-                group_id: createdGroup.id
+                password: 'password'
             });
 
         expect(res.statusCode).equals(409);
-    });
-
-    group.test('register a teacher with a wrong group id', async () => {
-        const admin = await new UserHelper({ email: 'admin@example.com' }).initAdmin();
-        const agent = await request(app);
-        const payload = {
-            first_name: 'John',
-            last_name: 'Smith',
-            father_name: 'Bob',
-            phone: '+12124798964',
-            email: 'john.smith@example.com',
-            password: 'password',
-            group_id: 123
-        };
-
-        const res = await agent
-            .post('/api/teachers')
-            .set('Cookie', `session=${await admin.auth(agent)}`)
-            .send(payload);
-        const teacher = await User.getUserByEmail(payload.email);
-
-        expect(res.statusCode).equals(400);
-        expect(teacher).equals(undefined);
     });
 });
