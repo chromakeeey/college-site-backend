@@ -53,10 +53,14 @@ router.post('/news', [
         return res.status(400).json({ errors: errors });
     }
 
-    if (!req.session.isAdmin || queries.group_id && !(await Group.isCurator(req.session.userId, queries.group_id)) && !req.session.isAdmin) {
+    if (!req.session.isAdmin || req.body.group_id && !(await Group.isCurator(req.session.userId, req.body.group_id)) && !req.session.isAdmin) {
         await fs.unlinkSync(req.file.path);
 
         throw new AppError('Access forbidden.', 403);
+    }
+
+    if (req.session.isAdmin && !await Group.isExists(req.body.group_id)) {
+        throw new AppError('Group was not found!', 404);
     }
 
     const extension = req.file.originalname.split('.')[1];

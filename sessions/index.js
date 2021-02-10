@@ -45,15 +45,7 @@ const sessionProxyHandler = {
     }
 };
 
-const getSessionDataIfExists = async (cookieHeader, config) => {
-    const cookies = Cookie.parse(cookieHeader);
-
-    if (!cookies.session) {
-        return null;
-    }
-
-    const sessionId = cookie.unsign(cookies.session, config.secret);
-
+const getSessionDataIfExists = async (sessionId, config) => {
     if (!sessionId) {
         return null;
     }
@@ -79,10 +71,12 @@ const middleware = ({
     };
 
     return async (req, res, next) => {
-        const sessionData = await getSessionDataIfExists(req.headers.cookie, config);
+        const cookies = Cookie.parse(req.headers.cookie);
+        const sessionId = cookies.session ? cookie.unsign(cookies.session, config.secret) : null;
+        const sessionData = await getSessionDataIfExists(sessionId, config);
 
         if (sessionData) {
-            res.cookie('session', cookie.sign(sessionData.sessionId, secret), {
+            res.cookie('session', cookie.sign(sessionId, secret), {
                 maxAge: expirationTime,
                 httpOnly: httpOnly
             });
