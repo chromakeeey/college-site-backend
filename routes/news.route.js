@@ -10,6 +10,7 @@ const AppError = require('../helpers/AppError');
 const News = require('../mysql/news.commands');
 const AccountType = require('../helpers/AccountType');
 const Group = require('../mysql/group.commands');
+const User = require('../mysql/user.commands');
 
 router.post('/news', [
     middlewares.loginRequired,
