@@ -126,7 +126,11 @@ router.get('/news', [
     });
 
     news.forEach((news) => {
-        news.image_url = `${req.protocol}://${req.hostname}:${process.env.PORT}/uploads/images/${news.image_name}`;
+        if (process.env.PORT != 5000) {
+            news.image_url = `${req.protocol}://${req.hostname}/uploads/images/${news.image_name}`;
+        } else {
+            news.image_url = `${req.protocol}://${req.hostname}:${process.env.PORT}/uploads/images/${news.image_name}`;
+        }
 
         delete news.image_name;
     });
