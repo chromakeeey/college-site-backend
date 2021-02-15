@@ -6,6 +6,13 @@ const getSpecialties = async () => {
     return rows;
 };
 
+const isExists = async (specialtyId) => {
+    const [rows] = await connectionPool.query('SELECT EXISTS (SELECT 1 FROM specialty WHERE id = ?)', specialtyId);
+
+    return Object.values(rows[0])[0] === 1;
+};
+
 module.exports = {
     getSpecialties,
+    isExists,
 };

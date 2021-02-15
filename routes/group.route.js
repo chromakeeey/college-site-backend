@@ -6,6 +6,9 @@ const AppError = require('../helpers/AppError');
 const middlewares = require('./middlewares');
 
 const Group = require('../mysql/group.commands');
+const Specialty = require('../mysql/specialty.commands');
+const User = require('../mysql/user.commands');
+const AccountType = require('../helpers/AccountType');
 
 router.get('/groups', async (req, res) => {
     const groups = await Group.getGroups();
@@ -37,6 +40,10 @@ router.post('/groups', [
     middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
     const data = req.body;
+    if (!await Specialty.isExists(data.specialty_id)) {
+        throw new AppError('Specialty with this id was not found.', 404);
+    }
+
     const id = await Group.addGroup({
         specialtyId: data.specialty_id,
         course: data.course,
@@ -150,13 +157,7 @@ router.put('/groups/:id/subgroup', [
 });
 
 router.put('/groups/:id/curator', [
-    param('id')
-        .exists().withMessage('This parameter is required.')
-        .isInt().toInt().withMessage('The value should be of type integer.'),
-    body('group_id')
-        .exists().withMessage('This parameter is required.')
-        .isInt().toInt().withMessage('The value should be of type integer.'),
-    body('curator_id')
+    body('user_id')
         .exists().withMessage('This parameter is required.')
         .isInt().toInt().withMessage('The value should be of type integer.'),
 ], [
@@ -164,11 +165,25 @@ router.put('/groups/:id/curator', [
     middlewares.loginRequired,
     middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
-    if (req.session.userId !== req.params.id) {
-        throw new AppError('Access forbidden.', 403);
+    const groupId = req.params.id;
+    const userId = req.body.user_id;
+    const accountType = await User.getAccountTypeByUserId(userId);
+
+    if (accountType == -1) {
+        throw new AppError('Given user was not found', 404);
     }
-    
-    const success = await Group.setCurator(req.body);
+
+    if (accountType && accountType != AccountType.TEACHER) {
+        throw new AppError('Given user is not a teacher', 400);
+    }
+
+    const success = (await Group.getCurator(groupId)) ? await Group.updateCurator({
+        groupId: groupId,
+        userId: userId
+    }) : await Group.setCurator({
+        groupId: groupId,
+        userId: userId
+    })
 
     if(!success) {
         throw new AppError('Group with this id was not found.', 404);

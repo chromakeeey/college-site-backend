@@ -60,7 +60,7 @@ router.post('/news', [
         throw new AppError('Access forbidden.', 403);
     }
 
-    if (req.session.isAdmin && !await Group.isExists(req.body.group_id)) {
+    if (req.session.isAdmin && req.body.group_id && !await Group.isExists(req.body.group_id)) {
         throw new AppError('Group was not found!', 404);
     }
 

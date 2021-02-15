@@ -61,10 +61,23 @@ const setGroupSubgroup = async (groupId, subgroup) => {
     return rows.affectedRows > 0;
 };
 
-const setCurator = async (curator) => {
-    const [rows] = await connectionPool.query('UPDATE `teacher` SET group_id = ? WHERE user_id = ?', [
-        curator.group_id,
-        curator.curator_id
+const setCurator = async ({
+        groupId, userId
+    }) => {
+    const [rows] = await connectionPool.query('INSERT INTO teacher VALUES (?, ?)', [
+        userId,
+        groupId
+    ]);
+
+    return rows.affectedRows > 0;
+};
+
+const updateCurator = async ({
+        groupId, userId
+    }) => {
+    const [rows] = await connectionPool.query('UPDATE teacher SET group_id = ? WHERE user_id = ?', [
+        groupId,
+        userId
     ]);
 
     return rows.affectedRows > 0;
@@ -153,6 +166,7 @@ module.exports = {
     setGroupSpecialty,
     setGroupSubgroup,
     setCurator,
+    updateCurator,
     isExists,
     isCurator,
     isStudentInGroup,

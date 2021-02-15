@@ -41,6 +41,10 @@ const addUser = async ({
 const getAccountTypeByUserId = async (userId) => {
     const [rows] = await connectionPool.query('SELECT account_type FROM user WHERE id = ?', userId);
 
+    if (rows[0] == undefined) {
+        return -1;
+    }
+
     return Number(rows[0].account_type);
 };
 

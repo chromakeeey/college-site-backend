@@ -46,7 +46,7 @@ const getNewsCount = async (groupId=undefined) => {
 };
 
 const getNews = async ({
-    groupId,
+    groupId = null,
     limit,
     offset,
 } = {}) => {
@@ -56,16 +56,15 @@ const getNews = async ({
 
     if (!groupId) {
         [rows] = await connectionPool.query(`
-            SELECT
-                news.id, news.title,
-                news.image_name,
-                news.date, news.content
-            FROM
-                news, group_news
-            WHERE
-                news.id != group_news.news_id
-            ORDER BY
-                date
+        SELECT DISTINCT
+            news.id, news.title,
+            news.image_name,
+            news.date, news.content
+        FROM
+            news, group_news
+        WHERE
+            NOT EXISTS (SELECT * FROM group_news WHERE group_news.news_id = news.id)
+        ORDER BY date
             ${limitStatement}
             ${offsetStatement}
         `);
