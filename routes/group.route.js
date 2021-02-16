@@ -250,4 +250,58 @@ router.get('/groups/:id/members', [
     res.status(200).json(members);
 });
 
+router.get('/groups/:id/subjects/list', [
+    param('id').toInt()
+], [
+    middlewares.loginRequired
+], async (req, res) => {
+    const groupId = req.params.id;
+    const groupSubjects = await Group.getGroupSubjectsList(groupId);
+
+    res.status(200).json(groupSubjects);
+})
+
+router.get('/groups/:id/subjects', [
+    param('id').toInt()
+], [
+   middlewares.loginRequired
+], async (req, res) => {
+    const groupId = req.params.id;
+    const subjects = await Group.getGroupSubjects(groupId)
+
+    res.status(200).json(subjects);
+})
+
+router.post('/groups/:id/subjects', [
+    param('id').toInt(),
+    body('subgroup_id').isInt().withMessage('Only integer value'),
+    body('subject_id').isInt().withMessage('Only integer value'),
+    body('user_id').isInt().withMessage('Only integer value')
+
+], [
+    middlewares.loginRequired
+], async (req, res) => {
+    const groupId = req.params.id;
+    const body = req.body;
+    body.group_id = groupId;
+
+    await Group.addGroupSubject(body);
+
+    res.status(200).end();
+})
+
+router.put('/groups/subjects/:id/program-education', [
+    param('id').toInt(),
+    body('program_education_id').isInt().withMessage('Only integer value')
+], [
+    middlewares.loginRequired
+], async (req, res) => {
+    const id = req.params.id;
+    const program_education_id = req.body.program_education_id;
+
+    await Group.changeProgram(id, program_education_id);
+
+    res.status(200).end();
+})
+
 module.exports = router;

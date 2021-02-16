@@ -155,6 +155,75 @@ const getGroupMembers = async(groupId) => {
     return rows;
 };
 
+const getGroupSubjectsList = async (groupId) => {
+    const sql = `
+        SELECT
+            subject.*
+        FROM
+            subject, subject_group
+        WHERE
+            (subject.id = subject_group.subject_id)
+        AND
+            (subject_group.group_id = ?)
+    `;
+    const [groupSubjects] = await connectionPool.query(sql, groupId);
+
+    return groupSubjects;
+}
+
+const getGroupSubjects = async (groupId) => {
+    let [rows] = await connectionPool.query('SELECT * FROM subject_group WHERE group_id = ?', groupId);
+
+    await Promise.all(rows.map(async (row) => {
+        const [subject] = await connectionPool.query('SELECT * FROM subject WHERE id = ?', row.subject_id);
+        const [user] = await connectionPool.query('SELECT id, first_name, last_name, father_name FROM user WHERE id = ?', row.user_id);
+
+        delete row.user_id;
+        delete row.subject_id;
+
+        row.user = user[0];
+        row.subject = subject[0];
+    }));
+
+    return rows;
+}
+
+const addGroupSubject = async (groupSubject) => {
+    const sql = `
+        INSERT INTO
+            subject_group (group_id, subgroup_id, subject_id, user_id)
+        VALUES
+            (?, ?, ?, ?)
+    `;
+
+    const [rows] = await connectionPool.query(sql, [
+        groupSubject.group_id,
+        groupSubject.subgroup_id,
+        groupSubject.subject_id,
+        groupSubject.user_id
+    ])
+
+    return rows.insertId;
+};
+
+const changeProgram = async (id, programEducationId) => {
+    const sql = `
+        UPDATE
+            subject_group
+        SET
+            program_education_id = ?
+        WHERE
+            id = ?
+    `;
+
+    const [rows] = await connectionPool.query(sql, [
+        programEducationId,
+        id,
+    ]);
+
+    return rows.affectedRows > 0;
+};
+
 module.exports = {
     getGroups,
     getGroupMembers,
@@ -170,4 +239,8 @@ module.exports = {
     isExists,
     isCurator,
     isStudentInGroup,
+    getGroupSubjectsList,
+    getGroupSubjects,
+    addGroupSubject,
+    changeProgram,
 };

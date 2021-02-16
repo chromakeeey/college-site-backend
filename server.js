@@ -49,6 +49,10 @@ app.use('/api/', require('./routes/account_type.route'));
 app.use('/api/', require('./routes/specialty.route'));
 app.use('/api/', require('./routes/news.route'));
 
+app.use('/api/', require('./routes/program.route'));
+app.use('/api/', require('./routes/theme.route'));
+app.use('/api/', require('./routes/grade.route'));
+
 app.get('/', (req, res) => {
     res.end('<h1>College site API</h1>');
 });
