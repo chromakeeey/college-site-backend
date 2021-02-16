@@ -129,9 +129,12 @@ router.put('/groups/:id/specialty', [
 ], async (req, res) => {
     const id = req.params.id;
     const specialtyId = req.body.specialty_id;
-    const success = await Group.setGroupSpecialty(id, specialtyId);
 
-    if (!success) {
+    if (!await Specialty.isExists(specialtyId)) {
+        return res.status(404).end();
+    }
+
+    if (!await Group.setGroupSpecialty(id, specialtyId)) {
         throw new AppError('Group with this id was not found.', 404);
     }
 
