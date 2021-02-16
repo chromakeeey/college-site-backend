@@ -180,6 +180,14 @@ router.put('/students/:id/group-id', [
     middlewares.loginRequired,
     middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
+    if (await User.getAccountTypeByUserId(req.session.userId) !== AccountType.STUDENT) {
+        throw new AppError('Given user is not a student.', 403);
+    }
+
+    if (!await Group.isExists(req.body.group_id)) {
+        throw new AppError('Group was not found.', 404);
+    }
+
     const result = await Student.setStudentGroup(req.params.id, req.body.group_id);
 
     res.status(result ? 201 : 404).end();

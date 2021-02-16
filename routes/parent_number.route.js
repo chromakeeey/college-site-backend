@@ -7,6 +7,7 @@ const AppError = require('../helpers/AppError');
 const middlewares = require('./middlewares');
 
 const ParentNumber = require('../mysql/parent_number.commands');
+const User = require('../mysql/user.commands');
 
 const validateUserIdAndAccountType = async (req, res, next) => {
     const accountType = req.session.accountType;
@@ -49,10 +50,17 @@ router.post('/parent-numbers', [
             max: 128
         }).withMessage('The value should be in a range from 2 to 128 characters long.'),
 ], [
-    middlewares.loginRequired,
-    validateUserIdAndAccountType,
+    middlewares.loginRequired
 ], async (req, res) => {
     const body = req.body;
+
+    if (body.userId !== req.session.userId && !req.session.isAdmin) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
+    if (await User.getAccountTypeByUserId(body.user_id) !== AccountType.STUDENT) {
+        throw new AppError('Given user is not a student.', 403);
+    }
 
     await ParentNumber.addParentNumber({
         userId: body.user_id,
@@ -61,7 +69,7 @@ router.post('/parent-numbers', [
         role: body.role,
         phone: body.phone,
     });
-    
+
     return res.status(200).end();
 });
 
