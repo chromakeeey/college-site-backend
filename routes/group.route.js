@@ -62,7 +62,13 @@ router.delete('/groups/:id', [
     middlewares.loginRequired,
     middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
-    await Group.removeGroup(req.params.id);
+    const groupId = req.params.id;
+
+    if (!await Group.isExists(groupId)) {
+        return res.status(404).end();
+    }
+
+    await Group.removeGroup(groupId);
 
     res.status(200).end();
 });
