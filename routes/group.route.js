@@ -97,7 +97,16 @@ router.put('/groups/:id/course', [
         .isInt().toInt().withMessage('The value should be of type integer.'),
     body('course')
         .exists().withMessage('This parameter is required.')
-        .isInt().toInt().withMessage('The value should be of type integer.'),
+        .isInt().toInt().withMessage('The value should be of type integer.')
+        .custom((value) => {
+            value = Number.parseInt(value);
+
+            if (value == NaN) {
+                return false;
+            }
+
+            return (value >= 1) && (value <= 4);
+        }).withMessage('The value should be in the inclusive range from 1 to 4.'),
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
@@ -106,9 +115,7 @@ router.put('/groups/:id/course', [
     const id = req.params.id;
     const { course } = req.body;
 
-    const success = await Group.setGroupCourse(id, course);
-
-    if (!success) {
+    if (!await Group.setGroupCourse(id, course)) {
         throw new AppError('Group with this id was not found.', 404);
     }
 
