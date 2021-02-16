@@ -250,6 +250,10 @@ router.put('/users/:id/activated', [
     middlewares.loginRequired,
     middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
+    if (req.session.userId === req.params.id) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
     const status = req.body.is_activated;
     const result = await User.setActivationStatus(req.params.id, status);
 
@@ -257,7 +261,7 @@ router.put('/users/:id/activated', [
         await req.session.store.deleteSessionsByUserId(req.params.id);
     }
 
-    res.status(result ? 201 : 500).end();
+    res.status(result ? 201 : 404).end();
 });
 
 router.put('/users/:id/email', [
@@ -266,12 +270,15 @@ router.put('/users/:id/email', [
         .isInt().toInt().withMessage('The value should be of type integer.'),
     body('email')
         .exists().withMessage('This parameter is required.')
-        .isBoolean().toBoolean().withMessage('The value should be of type boolean.'),
+        .isEmail().withMessage('The value should be a valid email address.'),
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
-    middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
+    if (req.session.userId !== req.params.id && !req.session.isAdmin) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
     const emailUsed = await User.checkIfEmailUsed(req.body.email);
 
     if (emailUsed) {
@@ -295,9 +302,12 @@ router.put('/users/:id/password', [
 ], [
     middlewares.validateData,
     middlewares.loginRequired,
-    middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
-    const result = await User.setPassword(req.params.id, req.body.password);
+    if (req.session.userId !== req.params.id && !req.session.isAdmin) {
+        throw new AppError('Access forbidden.', 403);
+    }
+
+    const result = await User.setPassword(req.params.id, await HashHelper.hash(req.body.password));
 
     res.status(result ? 201 : 404).end();
 });
