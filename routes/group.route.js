@@ -246,17 +246,36 @@ router.get('/groups/:id/members', [
     middlewares.validateData,
     middlewares.loginRequired,
 ], async (req, res) => {
-    const members = await Group.getGroupMembers(req.params.id);
-   
-    if (members.length <= 0) {
+    const groupId = req.params.id;
+
+    if (!await Group.isExists(groupId)) {
+        throw new AppError('Given group was not found.', 404);
+    }
+
+    const members = await Group.getGroupMembers(groupId);
+    const curator = await Group.getCurator(groupId);
+
+    if (!members.length || !curator) {
         return res.status(204).end();
     }
 
+    members.push(curator);
+
     members.forEach(member =>{
+        const isCurator = member.account_type === undefined;
+
         member.is_activated = Boolean(member.is_activated);
-        member.is_curator = member.account_type === 2;
+        member.is_curator = isCurator;
 
         delete member.account_type;
+
+        if (isCurator) {
+            delete member.group_id;
+            delete member.specialty_id;
+            delete member.course;
+            delete member.subgroup;
+            delete member.name;
+        }
     });
 
     res.status(200).json(members);

@@ -100,57 +100,52 @@ const isStudentInGroup = async (userId, groupId) => {
 const getCurator = async (groupId) => {
     const sql = `
         SELECT
-            u.id,
-            u.first_name,
-            u.last_name,
-            u.father_name,
-            u.phone,
-            u.is_activated,
-            g.id AS group_id,
-            g.specialty_id,
-            g.course,
-            g.subgroup,
-            s.name
+            user.id, user.first_name,
+            user.last_name,
+            user.father_name,
+            user.phone,
+            user.is_activated,
+            curator_group.id AS group_id,
+            curator_group.specialty_id,
+            curator_group.course,
+            curator_group.subgroup,
+            specialty.name
         FROM
-            \`teacher\` AS t
+            teacher
         INNER JOIN 
-            \`user\` AS u,
-            \`specialty\` AS s,
-            \`group\` AS g
+            user,
+            specialty,
+            \`group\` AS curator_group
         WHERE 
-            t.user_id = u.id
+            teacher.user_id = user.id
         AND
-            t.group_id = ?
+            teacher.group_id = ?
         AND
-            g.id = t.group_id
+            curator_group.id = teacher.group_id
     `;
     const [rows] = await connectionPool.query(sql, groupId);
 
     return rows[0];
 };
 
-const getGroupMembers = async(groupId) => {
+const getGroupMembers = async (groupId) => {
     const sql = `
-        SELECT DISTINCT
-            u.account_type,
-            u.id,
-            u.first_name,
-            u.last_name,
-            u.father_name,
-            u.is_activated
+        SELECT
+            user.account_type,
+            user.id,
+            user.first_name,
+            user.last_name,
+            user.father_name,
+            user.phone,
+            user.is_activated
         FROM 
-            \`student\` AS s,
-            \`teacher\` AS t, 
-            \`user\` AS u
-        WHERE
-            (s.group_id = ? AND s.user_id = u.id)
-        OR
-            (t.group_id = ? AND t.user_id = u.id)
+            user
+        JOIN
+            student
+        ON
+            student.user_id = user.id AND student.group_id = ?
     `;
-    const [rows] = await connectionPool.query(sql, [
-        groupId,
-        groupId
-    ]);
+    const [rows] = await connectionPool.query(sql, groupId);
 
     return rows;
 };
