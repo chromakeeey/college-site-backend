@@ -111,10 +111,13 @@ router.get('/news', [
         if (accountType == AccountType.TEACHER) {
             result = await Group.isCurator(req.session.userId, queries.group_id);
         } else {
-            result = await Group.isGroupMember(req.session.userId, queries.group_id);
+            result = await Group.isGroupMember({
+                userId: req.session.userId,
+                groupId: queries.group_id,
+            });
         }
 
-        if (result) {
+        if (!result) {
             throw new AppError('Access forbidden.', 403);
         }
     }

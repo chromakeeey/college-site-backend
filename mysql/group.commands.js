@@ -224,6 +224,15 @@ const changeProgram = async (id, programEducationId) => {
     return rows.affectedRows > 0;
 };
 
+const isGroupMember = async ({
+    groupId, userId
+}) => {
+    const sql = 'SELECT EXISTS (SELECT 1 FROM student WHERE group_id = ? AND user_id = ?)';
+    const [rows] = await connectionPool.query(sql, [groupId, userId]);
+
+    return Object.values(rows[0])[0] === 1;
+};
+
 module.exports = {
     getGroups,
     getGroupMembers,
@@ -243,4 +252,5 @@ module.exports = {
     getGroupSubjects,
     addGroupSubject,
     changeProgram,
+    isGroupMember,
 };
