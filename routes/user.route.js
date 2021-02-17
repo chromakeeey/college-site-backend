@@ -330,7 +330,7 @@ router.get('/users', [
             'email',
             'account_type',
             'is_activated'
-        ].includes(value)).withMessage('The only acceptable values are \'first_name\', \'last_name\', \'father_name\', \'phone\', \'email\'.'),
+        ].includes(value)).withMessage('The only acceptable values are \'first_name\', \'last_name\', \'father_name\', \'phone\', \'email\', \'account_type\', \'is_activated\'.'),
     query('count')
         .exists().withMessage('This parameter is requried.')
         .custom((value) => value > 0).withMessage('Count should be greater than 0.')
@@ -361,9 +361,10 @@ router.get('/users', [
     const queries = req.query;
     const accountType = await User.getAccountTypeByUserId(req.session.userId);
     const offset = (queries.page) ? (queries.count * queries.page) - queries.count : 0;
+    const ascendingOrder = (queries.order) ? queries.order === 'asc' : true;
 
     const users = await User.getUsers({
-        ascendingOrder: queries.order,
+        ascendingOrder: ascendingOrder,
         orderBy: queries.order_by,
         offset: offset,
         limit: queries.count,

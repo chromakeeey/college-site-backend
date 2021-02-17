@@ -51,9 +51,10 @@ router.get('/students', [
     const queries = req.query;
     const accountType = await User.getAccountTypeByUserId(req.session.userId);
     const offset = (queries.page) ? (queries.count * queries.page) - queries.count : 0;
+    const ascendingOrder = (queries.order) ? queries.order === 'asc' : true;
 
     const students = await Student.getStudents({
-        ascendingOrder: queries.order,
+        ascendingOrder: ascendingOrder,
         orderBy: queries.order_by,
         offset: offset,
         limit: queries.count,
@@ -180,7 +181,13 @@ router.put('/students/:id/group-id', [
     middlewares.loginRequired,
     middlewares.adminPrivilegeRequired,
 ], async (req, res) => {
-    if (await User.getAccountTypeByUserId(req.session.userId) !== AccountType.STUDENT) {
+    const accountType = await User.getAccountTypeByUserId(req.params.id);
+
+    if (!accountType) {
+        return res.status(404).end();
+    }
+
+    if (accountType !== AccountType.STUDENT) {
         throw new AppError('Given user is not a student.', 403);
     }
 
