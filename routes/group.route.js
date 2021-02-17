@@ -209,14 +209,10 @@ router.put('/groups/:id/curator', [
 });
 
 router.get('/groups/:id/curator', [
-    body('group_id')
-        .exists().withMessage('This parameter is required.')
-        .isInt().toInt().withMessage('The value should be of type integer.'),
-], [
     middlewares.validateData,
     middlewares.loginRequired,
 ], async (req, res) => {
-    const curator = await Group.getCurator(req.body.group_id);
+    const curator = await Group.getCurator(req.params.id);
    
     if (curator == null) {
         return res.status(204).end();
