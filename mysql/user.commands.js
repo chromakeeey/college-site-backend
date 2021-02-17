@@ -267,7 +267,6 @@ const getUsers = async ({
         ${offsetStatement}
     `;
 
-    console.log(sql);
     const [rows] = await connectionPool.query(sql, whereCaluse.values);
 
     return rows;
