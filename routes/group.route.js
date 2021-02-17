@@ -255,11 +255,13 @@ router.get('/groups/:id/members', [
     const members = await Group.getGroupMembers(groupId);
     const curator = await Group.getCurator(groupId);
 
-    if (!members.length || !curator) {
+    if (!members.length && !curator) {
         return res.status(204).end();
     }
 
-    members.push(curator);
+    if (curator) {
+        members.push(curator);
+    }
 
     members.forEach(member =>{
         const isCurator = member.account_type === undefined;
