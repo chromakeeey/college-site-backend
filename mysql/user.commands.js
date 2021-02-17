@@ -163,6 +163,116 @@ const setPassword = async (userId, password) => {
     return rows.affectedRows > 0;
 };
 
+const getUsersCount = async ({
+    isActivated,
+    accountType
+} = {}) => {
+    const whereCaluse = (() => {
+        const conditions = [];
+        const values = [];
+        const result = {
+            'values': values,
+            'conditions': ''
+        };
+
+        if (isActivated != undefined) {
+            conditions.push('is_activated = ?');
+            values.push(isActivated);
+        }
+
+        if (accountType != undefined) {
+            conditions.push('account_type = ?');
+            values.push(accountType);
+        }
+
+        if (conditions.length) {
+            result.conditions = 'WHERE ' + conditions.join(' AND ');
+        }
+
+        return result;
+    })();
+    const sql = `
+        SELECT
+            COUNT(id)
+        FROM
+            user
+        ${whereCaluse.conditions}
+    `;
+
+    const [rows] = await connectionPool.query(sql, whereCaluse.values);
+
+    return Object.values(rows[0])[0];
+};
+
+const getUsers = async ({
+    ascendingOrder,
+    orderBy,
+    isActivated,
+    accountType,
+    limit,
+    offset
+} = {}) => {
+    const whereCaluse = (() => {
+        const conditions = [];
+        const values = [];
+        const result = {
+            'values': values,
+            'conditions': ''
+        };
+
+        if (isActivated != undefined) {
+            conditions.push('is_activated = ?');
+            values.push(isActivated);
+        }
+
+        if (accountType != undefined) {
+            conditions.push('account_type = ?');
+            values.push(accountType);
+        }
+
+        if (conditions.length) {
+            result.conditions = 'WHERE ' + conditions.join(' AND ');
+        }
+
+        return result;
+    })();
+    const limitStatement = (limit != undefined) ? `LIMIT ${limit}` : '';
+    const offsetStatement = (offset != undefined) ? `OFFSET ${offset}` : '';
+    const orderByClause = (() => {
+        if (orderBy == undefined) {
+            return '';
+        }
+
+        const ordering = (ascendingOrder === false) ? 'DESC' : 'ASC';
+
+        return `ORDER BY ${orderBy} ${ordering}`;
+    })();
+
+    const sql = `
+        SELECT
+            user.id, user.first_name,
+            user.last_name, user.father_name,
+            user.phone, user.email,
+            user.is_activated, user.account_type AS account_type_id,
+            account_type.name AS account_type_name
+        FROM
+            user
+        JOIN
+            account_type
+        ON
+            user.account_type = account_type.id
+        ${whereCaluse.conditions}
+        ${orderByClause}
+        ${limitStatement}
+        ${offsetStatement}
+    `;
+
+    console.log(sql);
+    const [rows] = await connectionPool.query(sql, whereCaluse.values);
+
+    return rows;
+};
+
 module.exports = {
     addUser,
     getUserInfo,
@@ -179,4 +289,6 @@ module.exports = {
     getActivationStatus,
     setEmail,
     setPassword,
+    getUsersCount,
+    getUsers,
 };

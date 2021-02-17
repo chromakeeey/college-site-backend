@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { body, param } = require('express-validator');
+const { body, param, query } = require('express-validator');
 const router = Router();
 
 const AppError = require('../helpers/AppError');
@@ -10,6 +10,7 @@ const HashHelper = require('../helpers/HashHelper');
 const User = require('../mysql/user.commands');
 const Student = require('../mysql/student.commands');
 const Teacher = require('../mysql/teacher.commands');
+const AccountTypeSql = require('../mysql/account_type.commands');
 
 router.post('/users/auth', [
     body('email')
@@ -310,6 +311,97 @@ router.put('/users/:id/password', [
     const result = await User.setPassword(req.params.id, await HashHelper.hash(req.body.password));
 
     res.status(result ? 201 : 404).end();
+});
+
+router.get('/users', [
+    query('order')
+        .optional()
+        .custom((value) => [
+            'asc',
+            'desc'
+        ].includes(value)).withMessage('The only acceptable values are \'asc\' & \'desc\'.'),
+    query('order_by')
+        .optional()
+        .custom((value) => [
+            'first_name',
+            'last_name',
+            'father_name',
+            'phone',
+            'email',
+            'account_type',
+            'is_activated'
+        ].includes(value)).withMessage('The only acceptable values are \'first_name\', \'last_name\', \'father_name\', \'phone\', \'email\'.'),
+    query('count')
+        .exists().withMessage('This parameter is requried.')
+        .custom((value) => value > 0).withMessage('Count should be greater than 0.')
+        .isInt().toInt().withMessage('The value should be of type integer.'),
+    query('page')
+        .isInt().toInt().withMessage('Page number should be of type integer.')
+        .custom((value) => value > 0).withMessage('Page number should be greater than 0.')
+        .optional(),
+    query('is_activated')
+        .isBoolean().toBoolean().withMessage('The value should be of type boolean.')
+        .optional(),
+    query('account_type')
+        .isInt().toInt().withMessage('The value should be of type integer.')
+        .custom(async (value) => {
+            value = Number.parseInt(value);
+
+            if (value == NaN) {
+                return false;
+            }
+
+            return await AccountTypeSql.isExists(value);
+        })
+        .optional(),
+], [
+    middlewares.validateData,
+    middlewares.loginRequired,
+], async (req, res) => {
+    const queries = req.query;
+    const accountType = await User.getAccountTypeByUserId(req.session.userId);
+    const offset = (queries.page) ? (queries.count * queries.page) - queries.count : 0;
+
+    const users = await User.getUsers({
+        ascendingOrder: queries.order,
+        orderBy: queries.order_by,
+        offset: offset,
+        limit: queries.count,
+        accountType: queries.account_type,
+        isActivated: queries.is_activated,
+    });
+
+    if (!users.length) {
+        return res.status((queries.page) ? 404 : 204).end();
+    }
+
+    users.forEach((user) => {
+        if ((accountType === AccountType.STUDENT || accountType == AccountType.ENROLLEE) && req.session.userId !== user.id) {
+            delete user.email;
+            delete user.phone;
+        }
+
+        user.account_type = {
+            id: user.account_type_id,
+            name: user.account_type_name
+        };
+        user.is_activated = Boolean(user.is_activated);
+
+        delete user.account_type_id;
+        delete user.account_type_name;
+    });
+
+    const usersCount = await User.getUsersCount({
+        isActivated: queries.is_activated,
+        accountType: queries.account_type,
+    });
+    const pageCount = Math.ceil(usersCount / queries.count);
+
+    res.status(200).json({
+        'page_count': pageCount,
+        'current_item_count': users.length,
+        'result': users,
+    });
 });
 
 module.exports = router;

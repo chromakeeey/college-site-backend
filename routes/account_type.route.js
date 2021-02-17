@@ -6,8 +6,7 @@ const middlewares = require('./middlewares');
 const AccountTypes = require('../mysql/account_type.commands');
 
 router.get('/account-types', [
-    middlewares.loginRequired,
-    middlewares.adminPrivilegeRequired
+    middlewares.loginRequired
 ], async (req, res) => {
     const accountTypes = await AccountTypes.getListOfAccountTypes();
 
